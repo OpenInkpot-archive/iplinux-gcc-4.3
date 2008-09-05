@@ -1,0 +1,615 @@
+#! /bin/sh -e
+
+# DP: libjava: @file support for gjavah & gjar
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+	uudecode $0
+	tar -xv -f classfiles.tar.bz2 -C ${dir}libjava
+	rm -f classfiles.tar.bz2*
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+2008-06-06  Andrew John Hughes  <gnu_andrew at member.fsf.org>
+
+        * tools/gnu/classpath/tools/common/ClasspathToolParser.java:
+        Fixed indentation and changed to use OptionException.
+        * tools/gnu/classpath/tools/getopt/OptionException.java:
+        (OptionException(String,Throwable)): Added.
+
+2008-06-03  Robert Schuster  <robertschuster at fsfe.org>
+
+        * tools/gnu/classpath/tools/jar/Main.java:
+        (run): Call different ClasspathToolParser.parse() variant.
+        (getParser): Changed return type to ClasspathToolParser.
+        * tools/gnu/classpath/tools/javah/GcjhMain.java:
+        (getParser): Changed return type to ClasspathToolParser.
+        * tools/gnu/classpath/tools/javah/Main.java:
+        (getParser): Changed return type to ClasspathToolParser.
+        * tools/gnu/classpath/tools/getopt/Parser.java: Make 'programName'
+        protected.
+        * tools/gnu/classpath/tools/common/ClasspathToolParser.java:
+        (parse(String[], FileArgumentCallback,boolean): New method.
+        (parse(String[], boolean): New method.
+        (parseFileList): New method.
+        (parseLine): New method.
+        (AtFileArgumentCallback): New inner class.
+
+Index: libjava/classpath/tools/gnu/classpath/tools/getopt/OptionException.java
+===================================================================
+--- libjava/classpath/tools/gnu/classpath/tools/getopt/OptionException.java	(revision 136500)
++++ libjava/classpath/tools/gnu/classpath/tools/getopt/OptionException.java	(working copy)
+@@ -49,4 +49,10 @@
+   {
+     super(message);
+   }
++
++  public OptionException(String message, Throwable cause)
++  {
++    super(message, cause);
++  }
++
+ }
+Index: libjava/classpath/tools/gnu/classpath/tools/common/ClasspathToolParser.java
+===================================================================
+--- libjava/classpath/tools/gnu/classpath/tools/common/ClasspathToolParser.java	(revision 136500)
++++ libjava/classpath/tools/gnu/classpath/tools/common/ClasspathToolParser.java	(working copy)
+@@ -38,9 +38,16 @@
+ 
+ package gnu.classpath.tools.common;
+ 
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.FileNotFoundException;
++import java.io.FileReader;
++import java.io.Reader;
+ import java.text.MessageFormat;
++import java.util.ArrayList;
+ 
+ import gnu.classpath.Configuration;
++import gnu.classpath.tools.getopt.FileArgumentCallback;
+ import gnu.classpath.tools.getopt.Option;
+ import gnu.classpath.tools.getopt.OptionException;
+ import gnu.classpath.tools.getopt.Parser;
+@@ -84,4 +91,149 @@
+                }
+              });
+   }
++
++  public void parse(String[] inArgs, FileArgumentCallback files,
++		    boolean handleFileLists)
++  {
++    FileArgumentCallback cb;
++    
++    if (handleFileLists)
++      cb = new AtFileArgumentCallback(files);
++    else
++      cb = files;
++    
++    parse(inArgs, cb);
++  }
++
++  public String[] parse(String[] inArgs, boolean handleFileLists)
++  {
++    final ArrayList<String> fileResult = new ArrayList<String>();
++
++    final FileArgumentCallback cb = new FileArgumentCallback()
++      {
++    	public void notifyFile(String fileArgument)
++    	{
++    	  fileResult.add(fileArgument);
++    	}
++      };
++    
++    if (handleFileLists)
++      parse(inArgs, new AtFileArgumentCallback(cb));
++    else
++      parse(inArgs, cb);
++    
++    return fileResult.toArray(new String[fileResult.size()]);
++  }
++
++
++  /** 
++   * Simple function that takes the given {@link Reader}, treats it like
++   * a textfile and reads all the whitespace separated entries from it
++   * and adds them to the @{link FileArgumentCallback} instance.
++   *
++   * @param reader the reader to read from.
++   * @param cb the callback to post the filenames to.
++   * @throws OptionException if an error occurs reading the list.
++   */
++  public void parseFileList(Reader reader, FileArgumentCallback cb)
++	throws OptionException
++  {
++    BufferedReader breader = new BufferedReader(reader);
++    String line = null;
++
++    try
++      {
++        while ((line = breader.readLine()) != null)
++          parseLine(line, cb);
++          
++        reader.close();
++      }
++    catch (IOException ioe)
++      {
++        throw new OptionException("I/O error while reading a file list", ioe);
++      }
++      
++  }
++  
++  /** 
++   * Parses whitespace separated file entries.
++   *
++   * Note: This is not coping with whitespace in files or quoting.
++   *
++   * @param line the line of the file to parse.
++   * @param cb the callback to pass the parsed file to.
++   * @throws IOException if an I/O error occurs.
++   * @throws OptionException if an error occurs in the callback.
++   */
++  private void parseLine(String line, FileArgumentCallback cb)
++    throws IOException, OptionException
++  {
++    final int length = line.length();
++    int start = 0;
++    int end = 0;
++
++		// While not reached end of line ...
++    while (start < length)
++      {
++	// Search for first non-whitespace character for the start of a word.
++        while (Character.isWhitespace(line.codePointAt(start)))
++          {
++            start++;
++	    
++            if (start == length)
++              return;
++          }
++	
++        end = start + 1;
++	
++	// Search for first whitespace character for the end of a word.
++        while (end < length && !Character.isWhitespace(line.codePointAt(end)))
++          end++;
++	
++        cb.notifyFile(line.substring(start, end));
++	
++        start = end + 1;
++      }
++  }
++
++  /** 
++   * Implementation of {@link FileArgumentCallback} that handles
++   * file arguments in {@link #notifyFile} starting with a <code>@</code>
++   * through {@link ClasspathToolParser#parseFileList}.
++   */
++  class AtFileArgumentCallback extends FileArgumentCallback
++  {
++    FileArgumentCallback cb;
++    
++    AtFileArgumentCallback(FileArgumentCallback cb)
++    {
++      this.cb = cb;
++    }
++
++    @Override
++    public void notifyFile(String fileArgument)
++      throws OptionException
++    {
++      if (fileArgument.codePointAt(0) == '@')
++	{
++	  FileReader fr = null;
++	  
++	  try
++	    {
++	      fr = new FileReader(fileArgument.substring(1));
++	    }
++	  catch (FileNotFoundException fnfe)
++	    {
++	      throw new OptionException("File not found: " + fileArgument.substring(1),
++					fnfe);
++	    }
++	  
++	  ClasspathToolParser.this.parseFileList(fr, cb);
++	}
++      else
++	cb.notifyFile(fileArgument);
++    }
++    
++  }
++
+ }
+Index: libjava/classpath/tools/gnu/classpath/tools/javah/GcjhMain.java
+===================================================================
+--- libjava/classpath/tools/gnu/classpath/tools/javah/GcjhMain.java	(revision 136500)
++++ libjava/classpath/tools/gnu/classpath/tools/javah/GcjhMain.java	(working copy)
+@@ -38,10 +38,11 @@
+ 
+ package gnu.classpath.tools.javah;
+ 
++import gnu.classpath.tools.common.ClasspathToolParser;
++
+ import gnu.classpath.tools.getopt.Option;
+ import gnu.classpath.tools.getopt.OptionException;
+ import gnu.classpath.tools.getopt.OptionGroup;
+-import gnu.classpath.tools.getopt.Parser;
+ 
+ import java.io.IOException;
+ import java.util.ArrayList;
+@@ -60,9 +61,9 @@
+     return "gcjh";
+   }
+ 
+-  protected Parser getParser()
++  protected ClasspathToolParser getParser()
+   {
+-    Parser result = super.getParser();
++    ClasspathToolParser result = super.getParser();
+ 
+     result.setHeader("usage: gcjh [OPTION]... CLASS...");
+ 
+Index: libjava/classpath/tools/gnu/classpath/tools/javah/Main.java
+===================================================================
+--- libjava/classpath/tools/gnu/classpath/tools/javah/Main.java	(revision 136500)
++++ libjava/classpath/tools/gnu/classpath/tools/javah/Main.java	(working copy)
+@@ -188,7 +188,7 @@
+     return "javah";
+   }
+ 
+-  protected Parser getParser()
++  protected ClasspathToolParser getParser()
+   {
+     ClasspathToolParser result = new ClasspathToolParser(getName(), true);
+     result.setHeader("usage: javah [OPTIONS] CLASS...");
+@@ -339,8 +339,8 @@
+ 
+   protected void run(String[] args) throws IOException
+   {
+-    Parser p = getParser();
+-    String[] classNames = p.parse(args);
++    ClasspathToolParser p = getParser();
++    String[] classNames = p.parse(args, true);
+     postParse(classNames);
+     loader = classpath.getLoader();
+ 
+Index: libjava/classpath/tools/gnu/classpath/tools/jar/Main.java
+===================================================================
+--- libjava/classpath/tools/gnu/classpath/tools/jar/Main.java	(revision 136500)
++++ libjava/classpath/tools/gnu/classpath/tools/jar/Main.java	(working copy)
+@@ -172,9 +172,9 @@
+     }
+   }
+ 
+-  private Parser initializeParser()
++  private ClasspathToolParser initializeParser()
+   {
+-    Parser p = new JarParser("jar"); //$NON-NLS-1$
++    ClasspathToolParser p = new JarParser("jar"); //$NON-NLS-1$
+     p.setHeader(Messages.getString("Main.Usage")); //$NON-NLS-1$
+ 
+     OptionGroup grp = new OptionGroup(Messages.getString("Main.OpMode")); //$NON-NLS-1$
+@@ -265,11 +265,11 @@
+   private void run(String[] args)
+       throws InstantiationException, IllegalAccessException, IOException
+   {
+-    Parser p = initializeParser();
++    ClasspathToolParser p = initializeParser();
+     // Special hack to emulate old tar-style commands.
+     if (args.length > 0 && args[0].charAt(0) != '-')
+       args[0] = '-' + args[0];
+-    p.parse(args, new HandleFile());
++    p.parse(args, new HandleFile(), true);
+     if (readNamesFromStdin)
+       readNames();
+     Action t = (Action) operationMode.newInstance();
+
+begin 644 classfiles.tar.bz2
+M0EIH.3%!629361)$0X8`15C_____________________________________
+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
+H*X959%6825"`L<4*C?%@!@,/+]2B?("\;Q[.S?_%W)%.%"0$D1#A@```
+`
+end

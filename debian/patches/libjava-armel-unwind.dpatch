@@ -1,0 +1,38 @@
+#! /bin/sh -e
+
+# DP: On armel, apply kludge to fix unwinder infinitely looping 'til it runs out
+# DP: of memory (http://gcc.gnu.org/ml/java/2008-06/msg00010.html).
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+--- libjava/stacktrace.cc~	2008-06-10 07:54:46.053753233 +0200
++++ libjava/stacktrace.cc	2008-06-10 10:48:50.161300219 +0200
+@@ -115,6 +115,9 @@
+   // Check if the trace buffer needs to be extended.
+   if (pos == state->length)
+     {
++      // http://gcc.gnu.org/ml/java/2008-06/msg00010.html
++      return _URC_END_OF_STACK;
++
+       int newLength = state->length * 2;
+       void *newFrames = _Jv_AllocBytes (newLength * sizeof(_Jv_StackFrame));
+       memcpy (newFrames, state->frames, state->length * sizeof(_Jv_StackFrame));      

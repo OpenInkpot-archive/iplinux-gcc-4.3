@@ -1,0 +1,54 @@
+#! /bin/sh -e
+
+# DP: Fix PIC + -fstack-protector (PR target/35965)
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+gcc/
+	* config/arm/arm.c (require_pic_register): Only set
+	cfun->machine->pic_reg once per function.
+
+Index: gcc/config/arm/arm.c
+===================================================================
+--- gcc/config/arm/arm.c	(revision 137103)
++++ gcc/config/arm/arm.c	(working copy)
+@@ -3394,7 +3394,8 @@ require_pic_register (void)
+       gcc_assert (can_create_pseudo_p ());
+       if (arm_pic_register != INVALID_REGNUM)
+ 	{
+-	  cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
++	  if (!cfun->machine->pic_reg)
++	    cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
+ 
+ 	  /* Play games to avoid marking the function as needing pic
+ 	     if we are being called as part of the cost-estimation
+@@ -3406,7 +3407,8 @@ require_pic_register (void)
+ 	{
+ 	  rtx seq;
+ 
+-	  cfun->machine->pic_reg = gen_reg_rtx (Pmode);
++	  if (!cfun->machine->pic_reg)
++	    cfun->machine->pic_reg = gen_reg_rtx (Pmode);
+ 
+ 	  /* Play games to avoid marking the function as needing pic
+ 	     if we are being called as part of the cost-estimation
+
