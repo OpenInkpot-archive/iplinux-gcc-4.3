@@ -52,8 +52,10 @@ ifeq ($(with_shared_libgcc),yes)
 	cat debian/$(p_lgcc)/DEBIAN/shlibs >> debian/shlibs.local
 endif
 	ARCH=$(DEB_TARGET_ARCH) MAKEFLAGS="CC=something" dh_shlibdeps -p$(p_lgcc)
-	sed 's/\(lib[^ ]*\) /\1$(cross_lib_arch) /g' < debian/$(p_lgcc).substvars > debian/$(p_lgcc).substvars.new
-	mv debian/$(p_lgcc).substvars.new debian/$(p_lgcc).substvars
+	if [ -f debian/$(p_lgcc).subsvars ]; then \
+		sed 's/\(lib[^ ]*\) /\1$(cross_lib_arch) /g' < debian/$(p_lgcc).substvars > debian/$(p_lgcc).substvars.new; \
+		mv debian/$(p_lgcc).substvars.new debian/$(p_lgcc).substvars; \
+	fi
 	dh_gencontrol -p$(p_lgcc) \
 		-- -v$(DEB_LIBGCC_VERSION) $(common_substvars)
 	b=libgcc; v=$(GCC_SONAME); \

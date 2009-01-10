@@ -187,7 +187,11 @@ envfilt	= $(strip $(or $(call lfilt,$(1),$(2)),$(call nlfilt,$(1),$(3)),$(call w
 with_common_pkgs := yes
 
 # ... and some libraries, which do not change (libgcc1, libmudflap, libssp0).
-with_common_libs := yes
+ifneq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_common_libs := yes
+else
+  with_common_libs := disabled for the bootstrap compiler
+endif
 
 #ifeq ($(distribution),Debian)
 #  next_gcc_not_built := alpha m68k mips mipsel hurd-i386 kfreebsd-i386 kfreebsd-amd64
@@ -212,6 +216,8 @@ with_source := $(call envfilt, source, , , $(with_source))
 
 ifeq ($(PKGSOURCE),gcc-snapshot)
   with_nls := no
+else ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_nls := disabled for the bootstrap compiler
 else
   with_nls := yes
 endif
@@ -258,6 +264,8 @@ endif
 
 # C++ --------------------
 ifeq ($(with_base_only),yes)
+  with_cxx := no
+else ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
   with_cxx := no
 else
   with_cxx := yes
@@ -316,6 +324,8 @@ with_standalone_gcj := no
 # java converted for V3 C++ ABI for some archs
 ifeq ($(with_base_only),yes)
   with_java := no
+else ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_java := disabled for the bootstrap compiler
 else
   with_java := yes
 endif
@@ -403,7 +413,11 @@ else
 endif
 
 # libmudflap -------------------
-with_mudflap := yes
+ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_mudflap := no
+else
+  with_mudflap := yes
+endif
 with_mudflap := $(call envfilt, mudflap, , , $(with_mudflap))
 ifeq ($(with_mudflap),yes)
   with_libmudflap := yes
@@ -413,10 +427,13 @@ ifneq ($(with_common_libs),yes)
 endif
 
 # libssp -------------------
-with_ssp := yes
 ssp_no_archs = arm armel alpha hppa ia64 m68k mips mipsel
 ifneq (, $(filter $(DEB_TARGET_ARCH),$(ssp_no_archs)))
   with_ssp := not available on $(DEB_TARGET_ARCH)
+else ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_ssp := disabled for the bootstrap compiler
+else
+  with_ssp := yes
 endif
 with_ssp := $(call envfilt, ssp, , , $(with_ssp))
 
@@ -439,6 +456,8 @@ endif
 # Fortran 95 --------------------
 ifeq ($(with_base_only),yes)
   with_fortran := no
+else ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_fortran := disabled for the bootstrap compiler
 else
   with_fortran := yes
 endif
@@ -533,6 +552,10 @@ endif
 # ObjC --------------------
 ifeq ($(with_base_only),yes)
   with_objc := no
+else ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_objc := disabled for the bootstrap compiler
+else ifeq ($(DEB_CROSS),yes)
+  with_objc := disabled for cross compiler package
 else
   with_objc := yes
 endif
@@ -576,7 +599,11 @@ ifeq ($(with_objc),yes)
 endif
 
 # ObjC++ --------------------
-with_objcxx := yes
+ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_objcxx := no
+else
+  with_objcxx := yes
+endif
 with_objcxx := $(call envfilt, obj-c++, , c++ objc, $(with_objcxx))
 
 ifeq ($(with_objcxx),yes)
@@ -585,9 +612,12 @@ endif
 
 # Ada --------------------
 with_separate_gnat := yes
-with_ada := yes
 ifneq ($(with_dev),yes)
   with_ada := no
+else ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_ada := disabled for the bootstrap compiler
+else
+  with_ada := yes
 endif
 
 ada_no_cpus := alpha arm armel m32r m68k mips mipsel sh3 sh3eb sh4 sh4eb
@@ -640,12 +670,15 @@ ifeq ($(with_d),yes)
 endif
 
 # Shared libgcc --------------------
-with_shared_libgcc := yes
+with_libgcc := yes
 
 ifeq ($(with_common_libs),yes)
-  with_libgcc := yes
+  ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+    with_shared_libgcc := no
+  else
+    with_shared_libgcc := yes
+  endif
 else
-  with_libgcc := no
   with_shared_libgcc := no
 endif
 
@@ -666,7 +699,9 @@ endif
 # libgomp --------------------
 with_gomp := yes
 with_gomp := $(call envfilt, gomp, , , $(with_gomp))
-ifeq ($(with_common_libs),yes)
+ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_libgomp := no
+else ifeq ($(with_common_libs),yes)
   with_libgomp := yes
 else
   with_libgomp := no
@@ -705,6 +740,9 @@ ifeq ($(with_base_only),yes)
 endif
 ifeq ($(DEB_CROSS),yes)
   with_check := disabled for cross compiler package
+endif
+ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  with_check := disabled for the bootstrap compiler
 endif
 ifeq ($(REVERSE_CROSS),yes)
   with_check := disabled for reverse cross build

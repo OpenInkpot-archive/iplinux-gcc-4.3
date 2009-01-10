@@ -181,14 +181,23 @@ CONFARGS = -v \
 CONFARGS += \
 	--enable-languages=$(subst $(SPACE),$(COMMA),$(enabled_languages)) \
 	--prefix=/$(PF) \
-	--enable-shared \
 	--with-system-zlib \
+
+ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  CONFARGS += \
+    --disable-shared \
+    --disable-threads
+else
+  CONFARGS += --enable-shared
+endif
 
 ifneq ($(PKGSOURCE),gcc-snapshot)
   CONFARGS += \
 	--libexecdir=/$(libexecdir) \
-	--without-included-gettext \
-	--enable-threads=posix
+	--without-included-gettext
+  ifneq ($(DEB_CROSS_BOOTSTRAP),yes)
+    CONFARGS += --enable-threads-posix
+  endif
 endif
 
 CONFARGS += $(if $(filter yes,$(with_nls)),--enable-nls,--disable-nls)
@@ -594,6 +603,11 @@ ifeq ($(locale_data),generate)
 endif
 	touch $(build_locale_stamp)
 
+ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  CROSS_BUILD_TARGETS := all-gcc all-target-libgcc
+else
+  CROSS_BUILD_TARGETS := all
+endif
 
 $(build_stamp): $(configure_stamp) $(build_locale_stamp)
 	dh_testdir
@@ -601,7 +615,7 @@ $(build_stamp): $(configure_stamp) $(build_locale_stamp)
 # DEB_CROSS is never set if REVERSE_CROSS is set and vice-versa.
 # DEB_CROSS build
 ifeq ($(DEB_CROSS),yes)
-	: # build cross compiler for $(TARGET_ALIAS)
+	: # build bootstrap or cross compiler for $(TARGET_ALIAS)
 	( \
 	  set +e; \
 	  PATH=$(PWD)/bin:$$PATH \
@@ -610,7 +624,7 @@ ifeq ($(DEB_CROSS),yes)
 		CC="$(CC)" \
 		$(CFLAGS_TO_PASS) \
 		$(LDFLAGS_TO_PASS) \
-		; \
+		$(CROSS_BUILD_TARGETS); \
 	  echo $$? > status; \
 	) 2>&1 | tee bootstrap-protocol
 	s=`cat status`; rm -f status; test $$s -eq 0
@@ -1341,6 +1355,13 @@ endif
 endif # ($(PKGSOURCE),gcc-snapshot)
 
 # ----------------------------------------------------------------------
+
+ifeq ($(DEB_CROSS_BOOTSTRAP),yes)
+  INSTALL_EVERYTHING_TARGETS := install-gcc install-target-libgcc
+else
+  INSTALL_EVERYTHING_TARGETS := install
+endif
+
 install: $(install_dependencies)
 
 $(install_dummy_stamp): $(build_dummy_stamp)
@@ -1449,7 +1470,7 @@ endif
 	    DESTDIR=$(PWD)/$(d) \
 	    infodir=/$(PF)/share/info \
 	    mandir=/$(PF)/share/man \
-		install
+		$(INSTALL_EVERYTHING_TARGETS)
 
 	ls -l $(d)/$(PF)/bin
 	if [ ! -x $(d)/$(PF)/bin/$(TARGET_ALIAS)-gcc ]; then \
@@ -1546,7 +1567,7 @@ endif
 	    DESTDIR=$(PWD)/$(d) \
 	    infodir=/$(PF)/share/info \
 	    mandir=/$(PF)/share/man \
-		install
+		$(INSTALL_EVERYTHING_TARGETS)
 
 ifeq ($(with_common_gcclibdir),yes)
 	mv $(d)/$(subst /$(BASE_VERSION),/$(GCC_VERSION),$(gcc_lib_dir)) \
