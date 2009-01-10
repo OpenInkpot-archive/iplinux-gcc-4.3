@@ -22,7 +22,7 @@ p_lib64	= lib64stdc++$(CXX_SONAME)$(cross_lib_arch)
 p_lib32	= lib32stdc++$(CXX_SONAME)$(cross_lib_arch)
 p_libn32= libn32stdc++$(CXX_SONAME)$(cross_lib_arch)
 p_dev	= libstdc++$(CXX_SONAME)$(libstdc_ext)-dev$(cross_lib_arch)
-p_pic	= libstdc++$(CXX_SONAME)$(libstdc_ext)-pic$(cross_lib_arch)
+#p_pic	= libstdc++$(CXX_SONAME)$(libstdc_ext)-pic$(cross_lib_arch)
 p_dbg	= libstdc++$(CXX_SONAME)$(libstdc_ext)-dbg$(cross_lib_arch)
 p_dbg64	= lib64stdc++$(CXX_SONAME)$(libstdc_ext)-dbg$(cross_lib_arch)
 p_dbg32	= lib32stdc++$(CXX_SONAME)$(libstdc_ext)-dbg$(cross_lib_arch)
@@ -33,7 +33,7 @@ d_lib64	= debian/$(p_lib64)
 d_lib32	= debian/$(p_lib32)
 d_libn32= debian/$(p_libn32)
 d_dev	= debian/$(p_dev)
-d_pic	= debian/$(p_pic)
+#d_pic	= debian/$(p_pic)
 d_dbg	= debian/$(p_dbg)
 d_dbg64	= debian/$(p_dbg64)
 d_dbg32	= debian/$(p_dbg32)
@@ -80,35 +80,35 @@ dirs_dbg = \
 files_dbg = \
 	$(PF)/$(DEB_TARGET_GNU_TYPE)/lib/debug/libstdc++.*
 
-dirs_pic = \
-	$(docdir) \
-	$(gcc_lib_dir)
-files_pic = \
-	$(gcc_lib_dir)/libstdc++_pic.a
+#dirs_pic = \
+#	$(docdir) \
+#	$(gcc_lib_dir)
+#files_pic = \
+#	$(gcc_lib_dir)/libstdc++_pic.a
 
 ifeq ($(biarch64),yes)
     dirs_dev += $(gcc_lib_dir)/$(biarch64subdir)
     files_dev += \
 	$(gcc_lib_dir)/$(biarch64subdir)/libstdc++.{a,so} \
         $(gcc_lib_dir)/$(biarch64subdir)/libsupc++.a
-    dirs_pic += $(gcc_lib_dir)
-    files_pic += $(gcc_lib_dir)/$(biarch64subdir)/libstdc++_pic.a
+#    dirs_pic += $(gcc_lib_dir)
+#    files_pic += $(gcc_lib_dir)/$(biarch64subdir)/libstdc++_pic.a
 endif
 ifeq ($(biarch32),yes)
     dirs_dev += $(gcc_lib_dir)/$(biarch32subdir)/
     files_dev += \
 	$(gcc_lib_dir)/$(biarch32subdir)/libstdc++.{a,so} \
         $(gcc_lib_dir)/$(biarch32subdir)/libsupc++.a
-    dirs_pic += $(gcc_lib_dir)
-    files_pic += $(gcc_lib_dir)/$(biarch32subdir)/libstdc++_pic.a
+#    dirs_pic += $(gcc_lib_dir)
+#    files_pic += $(gcc_lib_dir)/$(biarch32subdir)/libstdc++_pic.a
 endif
 ifeq ($(biarchn32),yes)
     dirs_dev += $(gcc_lib_dir)/$(biarchn32subdir)/
     files_dev += \
 	$(gcc_lib_dir)/$(biarchn32subdir)/libstdc++.{a,so} \
         $(gcc_lib_dir)/$(biarchn32subdir)/libsupc++.a
-    dirs_pic += $(gcc_lib_dir)
-    files_pic += $(gcc_lib_dir)/$(biarchn32subdir)/libstdc++_pic.a
+#    dirs_pic += $(gcc_lib_dir)
+#    files_pic += $(gcc_lib_dir)/$(biarchn32subdir)/libstdc++_pic.a
 endif
 
 # ----------------------------------------------------------------------
@@ -276,20 +276,21 @@ $(binary_stamp)-libstdcxx-dev: $(libcxxdev_deps) \
 	dh_testroot
 	mv $(install_stamp) $(install_stamp)-tmp
 
-	rm -rf $(d_dev) $(d_pic)
+	rm -rf $(d_dev)
+#	rm -rf $(d_pic)
 	dh_installdirs -p$(p_dev) $(dirs_dev)
-	dh_installdirs -p$(p_pic) $(dirs_pic)
+#	dh_installdirs -p$(p_pic) $(dirs_pic)
 	dh_installdirs -p$(p_dbg) $(dirs_dbg)
 
 	: # - correct libstdc++-v3 file locations
 	mv $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib/libsupc++.a $(d)/$(gcc_lib_dir)/
 	mv $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib/libstdc++.{a,so} $(d)/$(gcc_lib_dir)/
 	ln -sf ../../../../$(DEB_TARGET_GNU_TYPE)/lib/libstdc++.so.$(CXX_SONAME) $(d)/$(gcc_lib_dir)/libstdc++.so
-	mv $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib/libstdc++_pic.a \
-		$(d)/$(gcc_lib_dir)/
+#	mv $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib/libstdc++_pic.a \
+#		$(d)/$(gcc_lib_dir)/
 
-	rm -f $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib/debug/libstdc++_pic.a
-	rm -f $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib64/debug/libstdc++_pic.a
+#	rm -f $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib/debug/libstdc++_pic.a
+#	rm -f $(d)/$(PF)/$(DEB_TARGET_GNU_TYPE)/lib64/debug/libstdc++_pic.a
 
 	: # remove precompiled headers
 	-find $(d) -type d -name '*.gch' | xargs rm -rf
@@ -315,7 +316,7 @@ endif
 	done
 
 	DH_COMPAT=2 dh_movefiles -p$(p_dev) $(files_dev)
-	DH_COMPAT=2 dh_movefiles -p$(p_pic) $(files_pic)
+#	DH_COMPAT=2 dh_movefiles -p$(p_pic) $(files_pic)
 	DH_COMPAT=2 dh_movefiles -p$(p_dbg) $(files_dbg)
 
 	dh_link -p$(p_dev) \
@@ -340,26 +341,34 @@ ifeq ($(biarchn32),yes)
 endif
 
 	debian/dh_doclink -p$(p_dev) $(p_lib)
-	debian/dh_doclink -p$(p_pic) $(p_lib)
+	debian/dh_doclink -p$(p_lib)
+#	debian/dh_doclink -p$(p_pic)
 	debian/dh_doclink -p$(p_dbg) $(p_lib)
-	cp -p $(srcdir)/libstdc++-v3/config/abi/pre/gnu.ver \
-		$(d_pic)/$(gcc_lib_dir)/libstdc++_pic.map
+#	cp -p $(srcdir)/libstdc++-v3/config/abi/pre/gnu.ver \
+#		$(d_pic)/$(gcc_lib_dir)/libstdc++_pic.map
 
 ifeq ($(with_cxxdev),yes)
 	debian/dh_rmemptydirs -p$(p_dev)
-	debian/dh_rmemptydirs -p$(p_pic)
+#	debian/dh_rmemptydirs -p$(p_pic)
 	debian/dh_rmemptydirs -p$(p_dbg)
 endif
 
 	PATH=/usr/share/dpkg-cross:$$PATH dh_strip -p$(p_dev) --dbg-package=$(p_lib)
-	PATH=/usr/share/dpkg-cross:$$PATH dh_strip -p$(p_pic)
-	dh_compress -p$(p_dev) -p$(p_pic) -p$(p_dbg) -X.txt
-	dh_fixperms -p$(p_dev) -p$(p_pic) -p$(p_dbg)
-	dh_gencontrol -p$(p_dev) -p$(p_pic) -p$(p_dbg) \
+#	PATH=/usr/share/dpkg-cross:$$PATH dh_strip -p$(p_pic)
+	dh_compress -p$(p_dev) -p$(p_dbg) -X.txt
+#	dh_compress -p$(p_pic) -X.txt
+	dh_fixperms -p$(p_dev) -p$(p_dbg)
+#	dh_fixperms -p$(p_pic)
+	dh_gencontrol -p$(p_dev) -p$(p_dbg) \
 		-- -v$(DEB_VERSION) $(common_substvars)
+#	dh_gencontrol -p$(p_pic) \
+#		-- -v$(DEB_VERSION) $(common_substvars)
 
-	dh_installdeb -p$(p_dev) -p$(p_pic) -p$(p_dbg)
-	dh_md5sums -p$(p_dev) -p$(p_pic) -p$(p_dbg)
-	dh_builddeb -p$(p_dev) -p$(p_pic) -p$(p_dbg)
+	dh_installdeb -p$(p_dev) -p$(p_dbg)
+	dh_md5sums -p$(p_dev) -p$(p_dbg)
+	dh_builddeb -p$(p_dev) -p$(p_dbg)
+#	dh_installdeb -p$(p_pic)
+#	dh_md5sums -p$(p_pic)
+#	dh_builddeb -p$(p_pic)
 
 	trap '' 1 2 3 15; touch $@; mv $(install_stamp)-tmp $(install_stamp)

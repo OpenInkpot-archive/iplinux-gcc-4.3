@@ -1281,24 +1281,6 @@ ifdef(`TARGET', `dnl
  environment.
 ')`'dnl
 
-Package: libstdc++CXX_SO`'PV-pic`'LS
-Architecture: ifdef(`TARGET',`all',`any')
-Section: ifdef(`TARGET',`devel',`libdevel')
-Priority: extra
-Depends: BASEDEP, libstdc++CXX_SO`'LS (>= ${gcc:Version}), libstdc++CXX_SO`'PV-dev`'LS (= ${gcc:Version})
-ifdef(`TARGET',`Provides: libstdc++CXX_SO-pic-TARGET-dcv1
-',`')`'dnl
-Description: The GNU Standard C++ Library v3 (shared library subset kit)`'ifdef(`TARGET)',` (TARGET)', `')
- This is used to develop subsets of the libstdc++ shared libraries for
- use on custom installation floppies and in embedded systems.
- .
- Unless you are making one of those, you will not need this package.
-ifdef(`TARGET', `dnl
- .
- This package contains files for TARGET architecture, for use in cross-compile
- environment.
-')`'dnl
-
 Package: libstdc++CXX_SO`'PV-dbg`'LS
 Architecture: ifdef(`TARGET',`all',`any')
 Section: ifdef(`TARGET',`devel',`libdevel')
