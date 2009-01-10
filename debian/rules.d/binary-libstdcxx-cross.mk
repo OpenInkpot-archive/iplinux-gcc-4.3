@@ -146,6 +146,7 @@ $(binary_stamp)-libstdcxx: $(install_stamp)
 	dh_makeshlibs -p$(p_lib) -V '$(p_lib) (>= $(DEB_STDCXX_SOVERSION))' -n
 	sed s/$(cross_lib_arch)//g < debian/$(p_lib)/DEBIAN/shlibs > debian/$(p_lib)/DEBIAN/shlibs.fixed
 	mv debian/$(p_lib)/DEBIAN/shlibs.fixed debian/$(p_lib)/DEBIAN/shlibs
+	rm -rf debian/$(p_lib)-deps
 	mkdir debian/$(p_lib)-deps
 	ln -s "`readlink -e /usr/$(DEB_TARGET_GNU_TYPE)/lib`" debian/$(p_lib)-deps/lib
 	ARCH=$(DEB_TARGET_ARCH) MAKEFLAGS="CC=something" dh_shlibdeps -p$(p_lib) -L$(p_lib)-deps
@@ -198,6 +199,7 @@ $(binary_stamp)-lib64stdcxx: $(install_stamp)
 	dh_makeshlibs -p$(p_lib64) -V '$(p_lib64) (>= $(DEB_STDCXX_SOVERSION))' -n
 	sed s/$(cross_lib_arch)//g < debian/$(p_lib64)/DEBIAN/shlibs > debian/$(p_lib64)/DEBIAN/shlibs.fixed
 	mv debian/$(p_lib64)/DEBIAN/shlibs.fixed debian/$(p_lib64)/DEBIAN/shlibs
+	rm -rf debian/$(p_lib64)-deps
 	mkdir debian/$(p_lib64)-deps
 	ln -s "`readlink -e /usr/$(DEB_TARGET_GNU_TYPE)/lib64`" debian/$(p_lib64)-deps/lib
 	ARCH=$(DEB_TARGET_ARCH) MAKEFLAGS="CC=something" dh_shlibdeps -p$(p_lib64) -L$(p_lib64)-deps
@@ -251,6 +253,7 @@ $(binary_stamp)-lib32stdcxx: $(install_stamp)
 	dh_makeshlibs -p$(p_lib32) -V '$(p_lib32) (>= $(DEB_STDCXX_SOVERSION))' -n
 	sed s/$(cross_lib_arch)//g < debian/$(p_lib32)/DEBIAN/shlibs > debian/$(p_lib32)/DEBIAN/shlibs.fixed
 	mv debian/$(p_lib32)/DEBIAN/shlibs.fixed debian/$(p_lib32)/DEBIAN/shlibs
+	rm -rf debian/$(p_lib32)-deps
 	mkdir debian/$(p_lib32)-deps
 	ln -s "`readlink -e /usr/$(DEB_TARGET_GNU_TYPE)/lib32`" debian/$(p_lib32)-deps/lib
 	ARCH=$(DEB_TARGET_ARCH) MAKEFLAGS="CC=something" dh_shlibdeps -p$(p_lib32) -L$(p_lib32)-deps
