@@ -15,6 +15,11 @@ IR	= install -m 644	# Install regular file
 IP	= install -m 755	# Install program
 IS	= install -m 755	# Install script
 
+#
+# Fails to configure cross-compiler with jobs > 1
+#
+USE_NJOBS=no
+
 #number of jobs to run for build
 ifeq ($(USE_NJOBS),no)
   NJOBS :=
