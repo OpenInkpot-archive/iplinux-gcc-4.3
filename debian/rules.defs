@@ -73,10 +73,10 @@ ifneq ($(DEB_BUILD_GNU_TYPE), $(DEB_HOST_GNU_TYPE))
  else
 	REVERSE_CROSS = yes
  endif
- else
- ifneq ($(DEB_HOST_GNU_TYPE), $(DEB_TARGET_GNU_TYPE))
+else
+# ifneq ($(DEB_HOST_GNU_TYPE), $(DEB_TARGET_GNU_TYPE))
 	DEB_CROSS = yes
- endif  
+# endif
 endif
 
 # ---------------------------------------------------------------------------
@@ -968,12 +968,12 @@ with_lib64fortran	:= no
 with_lib64mudflap	:= no
 with_lib64ssp		:= no
 
-biarch_map := i486=x86_64 powerpc=powerpc64 sparc=sparc64 s390=s390x \
-		x86_64=i486 powerpc64=powerpc mips=mips64 mipsel=mips64el
+biarch_map := powerpc=powerpc64 sparc=sparc64 s390=s390x \
+		powerpc64=powerpc mips=mips64 mipsel=mips64el
 biarch_cpu := $(patsubst $(DEB_TARGET_GNU_CPU)=%,%, \
 			 $(filter $(DEB_TARGET_GNU_CPU)=%,$(biarch_map)))
 
-biarch64_archs := /i386/powerpc/sparc/s390/mips/mipsel/
+biarch64_archs := /powerpc/sparc/s390/mips/mipsel/
 
 ifneq (yes,$(call envfilt, biarch, , ,yes))
   biarch64_archs :=
@@ -1028,7 +1028,7 @@ ifneq (,$(findstring /$(DEB_TARGET_ARCH)/,$(biarch64_archs)))
   export TARGET64_MACHINE
 endif
 
-biarch32_archs := /amd64/ppc64/kfreebsd-amd64/
+biarch32_archs := /ppc64/kfreebsd-amd64/
 ifneq (yes,$(call envfilt, biarch, , ,yes))
   biarch32_archs :=
 endif
