@@ -1,13 +1,11 @@
 arch_binaries  := $(arch_binaries) cxx
 
 dirs_cxx = \
-	$(docdir) \
 	$(PF)/bin \
-	$(gcc_lib_dir) \
-	$(PF)/share/man/man1
+	$(gcc_lib_dir)
+
 files_cxx = \
 	$(PF)/bin/$(DEB_TARGET_GNU_TYPE)-g++$(pkg_ver) \
-	$(PF)/share/man/man1/$(DEB_TARGET_GNU_TYPE)-g++$(pkg_ver).1 \
 	$(gcc_lib_dir)/cc1plus
 
 # ----------------------------------------------------------------------
@@ -19,12 +17,7 @@ $(binary_stamp)-cxx: $(install_stamp)
 	rm -rf $(d_cxx)
 	dh_installdirs -p$(p_cxx) $(dirs_cxx)
 	DH_COMPAT=2 dh_movefiles -p$(p_cxx) $(files_cxx)
-# g++ man page is a .so link
-	rm -f $(d_cxx)/$(PF)/share/man/man1/$(DEB_TARGET_GNU_TYPE)-g++$(pkg_ver).1
-	ln -sf $(DEB_TARGET_GNU_TYPE)-gcc$(pkg_ver).1.gz \
-		$(d_cxx)/$(PF)/share/man/man1/$(DEB_TARGET_GNU_TYPE)-g++$(pkg_ver).1.gz
 
-	debian/dh_doclink -p$(p_cxx) $(p_base)
 	debian/dh_rmemptydirs -p$(p_cxx)
 
 	dh_strip -p$(p_cxx)

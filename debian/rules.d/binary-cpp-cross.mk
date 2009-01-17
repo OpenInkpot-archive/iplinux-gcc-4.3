@@ -1,14 +1,11 @@
 arch_binaries  := $(arch_binaries) cpp
 
 dirs_cpp = \
-	$(docdir) \
-	$(PF)/share/man/man1 \
 	$(PF)/bin \
 	$(gcc_lexec_dir)
 
 files_cpp = \
 	$(PF)/bin/$(DEB_TARGET_GNU_TYPE)-cpp$(pkg_ver) \
-	$(PF)/share/man/man1/$(DEB_TARGET_GNU_TYPE)-cpp$(pkg_ver).1 \
 	$(gcc_lexec_dir)/cc1
 
 # ----------------------------------------------------------------------
@@ -21,7 +18,6 @@ $(binary_stamp)-cpp: $(install_stamp)
 	dh_installdirs -p$(p_cpp) $(dirs_cpp)
 	DH_COMPAT=2 dh_movefiles -p$(p_cpp) $(files_cpp)
 
-	debian/dh_doclink -p$(p_cpp) $(p_base)
 	debian/dh_rmemptydirs -p$(p_cpp)
 
 	dh_strip -p$(p_cpp)

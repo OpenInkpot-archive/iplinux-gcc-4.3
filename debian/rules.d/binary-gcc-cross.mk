@@ -8,11 +8,10 @@ dirs_gcc = \
 	$(PF)/bin \
 	$(gcc_lexec_dir) \
 	$(gcc_lib_dir)/{include,include-fixed} \
-	$(PF)/share/man/man1 $(libdir)
+	$(libdir)
 
 files_gcc = \
 	$(PF)/bin/$(DEB_TARGET_GNU_TYPE)-gcc$(pkg_ver) \
-	$(PF)/share/man/man1/$(DEB_TARGET_GNU_TYPE)-gcc$(pkg_ver).1 \
 	$(gcc_lexec_dir)/collect2 \
 	$(gcc_lib_dir)/{libgcc*,*.o} \
 	$(gcc_lib_dir)/include-fixed/README \
@@ -30,16 +29,6 @@ files_gcc = \
 	       done) \
 
 
-ifeq ($(biarch64),yes)
-    files_gcc += $(gcc_lib_dir)/$(biarch64subdir)/{libgcc*,*.o}
-endif
-ifeq ($(biarch32),yes)
-    files_gcc += $(gcc_lib_dir)/$(biarch32subdir)/{libgcc*,*.o}
-endif
-ifeq ($(biarchn32),yes)
-    files_gcc += $(gcc_lib_dir)/$(biarchn32subdir)/{libgcc*,*.o}
-endif
-
 ifeq ($(DEB_TARGET_ARCH),ia64)
     files_gcc += $(gcc_lib_dir)/include/ia64intrin.h
 endif
@@ -50,12 +39,6 @@ endif
 
 ifeq ($(DEB_TARGET_ARCH),$(findstring $(DEB_TARGET_ARCH),powerpc ppc64))
     files_gcc += $(gcc_lib_dir)/include/{altivec.h,ppc-asm.h}
-endif
-
-usr_doc_files = debian/README.Bugs \
-	$(shell test -f $(srcdir)/FAQ && echo $(srcdir)/FAQ)
-ifeq ($(with_check),yes)
-  usr_doc_files += test-summary
 endif
 
 # ----------------------------------------------------------------------
@@ -69,31 +52,9 @@ $(binary_stamp)-gcc: $(install_dependencies)
 
 	rm -f $(d)/$(PF)/$(libdir)/libgcc_s.so
 	ln -sf /$(PF)/$(DEB_TARGET_GNU_TYPE)/$(libdir)/libgcc_s.so.$(GCC_SONAME) $(d)/$(gcc_lib_dir)/libgcc_s.so
-ifeq ($(biarch64),yes)
-	rm -f $(d)/$(PF)/$(lib64)/libgcc_s.so
-	dh_link -p$(p_gcc) \
-	  /$(PF)/$(DEB_TARGET_GNU_TYPE)/$(lib64)/libgcc_s.so.$(GCC_SONAME) /$(gcc_lib_dir)/libgcc_s_64.so \
-	  /$(PF)/$(DEB_TARGET_GNU_TYPE)/$(lib64)/libgcc_s.so.$(GCC_SONAME) /$(gcc_lib_dir)/$(biarch64subdir)/libgcc_s.so
-endif
-ifeq ($(biarch32),yes)
-	mkdir -p $(d_gcc)/$(gcc_lib_dir)
-	mv $(d)/$(gcc_lib_dir)/$(biarch32subdir) $(d_gcc)/$(gcc_lib_dir)/
-	dh_link -p$(p_gcc) \
-	  /$(PF)/$(DEB_TARGET_GNU_TYPE)/lib32/libgcc_s.so.$(GCC_SONAME)  /$(gcc_lib_dir)/libgcc_s_32.so \
-	  /$(PF)/$(DEB_TARGET_GNU_TYPE)/lib32/libgcc_s.so.$(GCC_SONAME)  /$(gcc_lib_dir)/$(biarch32subdir)/libgcc_s_32.so \
-	  /$(PF)/$(DEB_TARGET_GNU_TYPE)/lib32/libgcc_s.so.$(GCC_SONAME)  /$(gcc_lib_dir)/$(biarch32subdir)/libgcc_s.so
-endif
-ifeq ($(biarchn32),yes)
-	rm -f $(d)/$(PF)/$(libn32)/libgcc_s.so
-	dh_link -p$(p_gcc) \
-	  /$(PF)/$(DEB_TARGET_GNU_TYPE)/$(libn32)/libgcc_s.so.$(GCC_SONAME) /$(gcc_lib_dir)/libgcc_s_n32.so \
-	  /$(PF)/$(DEB_TARGET_GNU_TYPE)/$(libn32)/libgcc_s.so.$(GCC_SONAME) /$(gcc_lib_dir)/$(biarchn32subdir)/libgcc_s.so
-endif
 
 	DH_COMPAT=2 dh_movefiles -p$(p_gcc) $(files_gcc)
 
-#	dh_installdebconf
-	debian/dh_doclink -p$(p_gcc) $(p_base)
 	debian/dh_rmemptydirs -p$(p_gcc)
 	PATH=/usr/share/dpkg-cross:$$PATH dh_strip -p$(p_gcc)
 	dh_compress -p$(p_gcc)

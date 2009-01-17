@@ -29,21 +29,11 @@ $(configure_stamp): control $(unpack_stamp) $(patch_stamp)
 	$(MAKE) -f debian/rules2 $@
 $(configure_dummy_stamp): control
 	$(MAKE) -f debian/rules2 $@
-$(configure_hppa64_stamp): $(build_stamp)
-	$(MAKE) -f debian/rules2 $@
-$(configure_spu_stamp): $(build_stamp)
-	$(MAKE) -f debian/rules2 $@
 
 build: $(build_dependencies)
 $(build_stamp): $(unpack_stamp) $(patch_stamp) $(configure_stamp)
 	$(MAKE) -f debian/rules2 $@
 $(build_dummy_stamp): $(configure_dummy_stamp)
-	$(MAKE) -f debian/rules2 $@
-$(build_javadoc_stamp): $(build_stamp)
-	$(MAKE) -f debian/rules2 $@
-$(build_hppa64_stamp): $(configure_hppa64_stamp)
-	$(MAKE) -f debian/rules2 $@
-$(build_spu_stamp): $(configure_spu_stamp)
 	$(MAKE) -f debian/rules2 $@
 
 check: $(build_stamp)
@@ -68,10 +58,6 @@ $(install_stamp): $(build_stamp)
 $(install_snap_stamp): $(build_stamp)
 	$(MAKE) -f debian/rules2 $@
 $(install_dummy_stamp): $(build_dummy_stamp)
-	$(MAKE) -f debian/rules2 $@
-$(install_hppa64_stamp): $(build_hppa64_stamp)
-	$(MAKE) -f debian/rules2 $@
-$(install_spu_stamp): $(build_spu_stamp)
 	$(MAKE) -f debian/rules2 $@
 
 html-docs doxygen-docs update-doxygen-docs update-ada-files xxx:

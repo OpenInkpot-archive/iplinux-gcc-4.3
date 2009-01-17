@@ -1,3 +1,10 @@
+gcc-4.3 (4.3.2-1.ip1) asimov; urgency=low
+
+  * First build for Inkpump:
+    - radically simplified the packaging due to much simpler requirements
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sat, 17 Jan 2009 09:51:32 +0600
+
 gcc-4.3 (4.3.2-1) unstable; urgency=medium
 
   [Matthias Klose]
