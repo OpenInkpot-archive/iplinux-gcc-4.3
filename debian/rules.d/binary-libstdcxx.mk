@@ -56,7 +56,8 @@ $(binary_stamp)-libstdcxx: $(install_stamp)
 	dh_strip -p$(p_lib)
 	dh_compress -p$(p_lib)
 	dh_fixperms -p$(p_lib)
-	dh_makeshlibs -p$(p_lib) -V '$(p_lib) (>= $(DEB_STDCXX_SOVERSION))'
+	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_makeshlibs -p$(p_lib) \
+		 -V '$(p_lib) (>= $(DEB_STDCXX_SOVERSION))'
 	cat debian/$(p_lib)/DEBIAN/shlibs >> debian/shlibs.local
 	dh_shlibdeps \
 		-L$(p_lgcc) -l:$(d)/$(PF)/lib:$(d_lgcc)/lib:\

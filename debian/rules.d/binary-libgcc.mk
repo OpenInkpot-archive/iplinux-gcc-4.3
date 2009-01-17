@@ -25,8 +25,8 @@ endif
 	dh_compress -p$(p_lgcc) -p$(p_lgccdbg)
 	dh_fixperms -p$(p_lgcc) -p$(p_lgccdbg)
 ifeq ($(with_shared_libgcc),yes)
-	dh_makeshlibs -p$(p_lgcc) -V '$(p_lgcc) (>= $(DEB_LIBGCC_SOVERSION))' \
-		-- -v$(DEB_LIBGCC_VERSION)
+	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_makeshlibs -p$(p_lgcc) \
+		-V '$(p_lgcc) (>= $(DEB_LIBGCC_SOVERSION))' -- -v$(DEB_LIBGCC_VERSION)
 	cat debian/$(p_lgcc)/DEBIAN/shlibs >> debian/shlibs.local
 endif
 	dh_shlibdeps -p$(p_lgcc)
