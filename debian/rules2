@@ -355,8 +355,6 @@ endif
 	@echo "-----------------------------------------------------------------------------"
 	@echo ""
 	rm -f $(configure_stamp) $(build_stamp)
-	: # generate debian/README.Debian
-	cat debian/README $(patch_stamp) > debian/README.Debian
 
 	rm -rf $(builddir)
 	mkdir $(builddir)
@@ -526,7 +524,6 @@ clean: debian/control
 	rm -f debian/shlibs.local debian/substvars.local
 	rm -f debian/*.debhelper
 	-[ -d debian/bugs ] && $(MAKE) -C debian/bugs clean
-	rm -f debian/README.libstdc++-baseline debian/README.Bugs
 	rm -f debian/lib*gcj-bc.shlibs
 	rm -rf bin locales
 	rm -rf check-inst
