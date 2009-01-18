@@ -615,14 +615,6 @@ $(install_stamp): $(build_stamp)
 	rm -rf $(d)
 	mkdir -p $(d)/$(libdir) $(d)/$(PF) $(d)/$(PF)/lib/debug
 
-ifeq ($(DEB_TARGET_GNU_CPU),x86_64)
-	: # link lib to lib64 and $(PF)/lib to $(PF)/lib64
-	: # (this works when CONFARGS contains '--disable-multilib')
-	ln -s $(libdir) $(d)/lib64
-	mkdir -p $(d)/$(PF)/$(libdir)
-	ln -s $(libdir) $(d)/$(PF)/lib64
-endif
-
 	: # Install everything
 	PATH=$(PWD)/bin:$$PATH \
 	$(SET_SHELL) \
@@ -670,21 +662,6 @@ endif
 	    mv -f $$i.new $$i; \
 	  fi; \
 	done
-
-ifeq ($(DEB_TARGET_ARCH),amd64)
-	: # fix '*.la' and '*.lai' files (don't resolve the /lib64 symlink)
-	for i in $$(find $(d) -name '*.la' -o -name '*.lai'); do \
-	  sed -e 's,/usr/lib64,/usr/lib,g' -e 's,/lib/\.\./lib64,/lib,g' \
-	    $$i > $$i.new; \
-	  if diff -u $$i $$i.new; then \
-	    rm -f $$i.new; \
-	  else \
-	    echo "$$i: references to lib64 fixed"; \
-	    touch -r $$i $$i.new; \
-	    mv -f $$i.new $$i; \
-	  fi; \
-	done
-endif
 
 	chmod 755 debian/dh_*
 

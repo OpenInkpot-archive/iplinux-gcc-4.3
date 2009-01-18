@@ -20,6 +20,7 @@ debian_patches = \
 
 debian_patches += \
 	pr30740 \
+	gcc-nomultilibamd64 \
 	gcc-textdomain \
 	gcc-driver-extra-langs \
 	gcc-hash-style-both \

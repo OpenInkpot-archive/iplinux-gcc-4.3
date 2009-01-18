@@ -1,0 +1,52 @@
+#! /bin/sh -e
+
+# DP: Use lib instead of lib64 as multilibdir on amd64.
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+diff -ur src.old/gcc/config/i386/t-linux64 src/gcc/config/i386/t-linux64
+--- gcc/config/i386/t-linux64	2007-09-27 19:56:06.000000000 +0000
++++ gcc/config/i386/t-linux64	2009-01-18 00:48:37.027627000 +0000
+@@ -4,23 +4,5 @@
+ SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver \
+ 		 $(srcdir)/config/i386/libgcc-x86_64-glibc.ver
+ 
+-# On Debian, Ubuntu and other derivative distributions, the 32bit libraries
+-# are found in /lib32 and /usr/lib32, /lib64 and /usr/lib64 are symlinks to
+-# /lib and /usr/lib, while other distributions install libraries into /lib64
+-# and /usr/lib64.  The LSB does not enforce the use of /lib64 and /usr/lib64,
+-# it doesn't tell anything about the 32bit libraries on those systems.  Set
+-# MULTILIB_OSDIRNAMES according to what is found on the target.
+-
+-MULTILIB_OPTIONS = m64/m32
+-MULTILIB_DIRNAMES = 64 32 
+-MULTILIB_OSDIRNAMES = ../lib64 $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
+-
+-LIBGCC = stmp-multilib
+-INSTALL_LIBGCC = install-multilib
+-
+-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o \
+-		     crtbeginT.o crtprec32.o crtprec64.o crtprec80.o \
+-		     crtfastmath.o
+-
+ softfp_wrap_start := '\#ifdef __x86_64__'
+ softfp_wrap_end := '\#endif'
