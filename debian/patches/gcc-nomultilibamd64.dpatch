@@ -50,3 +50,14 @@ diff -ur src.old/gcc/config/i386/t-linux64 src/gcc/config/i386/t-linux64
 -
  softfp_wrap_start := '\#ifdef __x86_64__'
  softfp_wrap_end := '\#endif'
+--- gcc/config/i386/linux64.h.orig	2009-01-25 15:35:23.000000000 +0000
++++ gcc/config/i386/linux64.h	2009-01-25 15:35:36.000000000 +0000
+@@ -54,7 +54,7 @@
+    done.  */
+ 
+ #define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
+-#define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux-x86-64.so.2"
++#define GLIBC_DYNAMIC_LINKER64 "/lib/ld-linux-x86-64.so.2"
+ 
+ #if TARGET_64BIT_DEFAULT
+ #define SPEC_32 "m32"
