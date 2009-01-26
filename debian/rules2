@@ -267,15 +267,15 @@ endif
 
 ifneq ($(DEB_CROSS),yes)
   CONFARGS += \
-	--build=`echo $(DEB_BUILD_GNU_TYPE) | sed -e 's/\(.*\)-\(.*\)-\(.*\)/\1-build-\2-\3/'` \
-	--host=`echo $(DEB_BUILD_GNU_TYPE) | sed -e 's/\(.*\)-\(.*\)-\(.*\)/\1-build-\2-\3/'` \
+	--build=$(DEB_BUILD_GNU_TYPE) \
+	--host=$(DEB_BUILD_GNU_TYPE) \
 	--target=$(TARGET_ALIAS)
 else
   CONFARGS += \
 	--program-prefix=$(TARGET_ALIAS)- \
 	--includedir=/$(PF)/$(DEB_TARGET_GNU_TYPE)/include \
-	--build=`echo $(DEB_BUILD_GNU_TYPE) | sed -e 's/\(.*\)-\(.*\)-\(.*\)/\1-build-\2-\3/'` \
-	--host=`echo $(DEB_BUILD_GNU_TYPE) | sed -e 's/\(.*\)-\(.*\)-\(.*\)/\1-build-\2-\3/'` \
+	--build=$(DEB_BUILD_GNU_TYPE) \
+	--host=$(DEB_BUILD_GNU_TYPE) \
 	--target=$(TARGET_ALIAS)
 endif
 
