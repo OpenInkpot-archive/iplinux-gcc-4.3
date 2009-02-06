@@ -29,7 +29,7 @@ ifeq ($(with_shared_libgcc),yes)
 		-V '$(p_lgcc) (>= $(DEB_LIBGCC_SOVERSION))' -- -v$(DEB_LIBGCC_VERSION)
 	cat debian/$(p_lgcc)/DEBIAN/shlibs >> debian/shlibs.local
 endif
-	dh_shlibdeps -p$(p_lgcc)
+	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps -p$(p_lgcc)
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_gencontrol -p$(p_lgcc) -p$(p_lgccdbg) \
 		-- -v$(DEB_LIBGCC_VERSION) $(common_substvars)
 

@@ -23,7 +23,7 @@ $(binary_stamp)-cxx: $(install_stamp)
 	dh_strip -p$(p_cxx)
 	dh_compress -p$(p_cxx)
 	dh_fixperms -p$(p_cxx)
-	dh_shlibdeps -p$(p_cxx)
+	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps -p$(p_cxx)
 	dh_gencontrol -p$(p_cxx) -- -v$(DEB_VERSION) $(common_substvars)
 	dh_installdeb -p$(p_cxx)
 	sed 's/cross-/$(DEB_TARGET_GNU_TYPE)-/g;s/-ver/$(pkg_ver)/g;s/gcc/g++/g' < debian/gcc-cross.postinst > debian/$(p_cxx)/DEBIAN/postinst

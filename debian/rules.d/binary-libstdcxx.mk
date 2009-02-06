@@ -59,7 +59,7 @@ $(binary_stamp)-libstdcxx: $(install_stamp)
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_makeshlibs -p$(p_lib) \
 		 -V '$(p_lib) (>= $(DEB_STDCXX_SOVERSION))'
 	cat debian/$(p_lib)/DEBIAN/shlibs >> debian/shlibs.local
-	dh_shlibdeps \
+	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps \
 		-L$(p_lgcc) -l:$(d)/$(PF)/lib:$(d_lgcc)/lib:\
 		-p$(p_lib)
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_gencontrol -p$(p_lib) -- -v$(DEB_VERSION) $(common_substvars)
@@ -120,7 +120,7 @@ endif
 
 	dh_compress -p$(p_dev) -p$(p_dbg) -X.txt
 	dh_fixperms -p$(p_dev) -p$(p_dbg)
-	dh_shlibdeps -p$(p_dev) -p$(p_dbg) -Xlib32/debug
+	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps -p$(p_dev) -p$(p_dbg) -Xlib32/debug
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_gencontrol -p$(p_dev) -p$(p_dbg) \
 		-- -v$(DEB_VERSION) $(common_substvars)
 
