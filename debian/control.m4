@@ -19,7 +19,7 @@ define(`ifenabled', `ifelse(index(enabled_languages, `$1'), -1, `dnl', `$2')')
 divert`'dnl
 dnl --------------------------------------------------------------------------
 Source: SRCNAME
-Section: devel
+Section: host/tools
 Priority: optional
 Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
 Standards-Version: 3.8.0
@@ -48,7 +48,7 @@ ifenabled(`gccbase',`
 
 Package: gcc`'PV-base
 Architecture: any
-Section: libs
+Section: host/tools
 Priority: required
 Replaces: cpp-4.3 (<< 4.3.2)
 Description: The GNU Compiler Collection (base package)
@@ -71,7 +71,7 @@ define(`SOFTBASEDEP', `gcc`'BASETARGET-base (>= ${gcc:SoftVersion})')
 
 Package: gcc`'BASETARGET-base
 Architecture: any
-Section: devel
+Section: host/tools
 Priority: required
 Conflicts: gcc-3.5-base
 Replaces: gcc-3.5-base
@@ -93,7 +93,7 @@ Description: GCC support library
 
 Package: libgcc1-dbg
 Architecture: any
-Section: libdevel
+Section: debug
 Priority: extra
 Depends: libgcc1 (= ${gcc:EpochVersion})
 Description: GCC support library (debug symbols)
@@ -158,7 +158,7 @@ ifdef(`TARGET', `dnl
 ifenabled(`cdev',`
 Package: gcc`'PV`'TS
 Architecture: any
-Section: devel
+Section: host/tools
 Priority: ifdef(`TARGET',`extra',`optional')
 Depends: BASEDEP, cpp`'PV`'TS (= ${gcc:Version}), binutils`'TS (>= ${binutils:Version}), ${dep:libgcc}, ${dep:libssp}, ${dep:libgomp}, ${dep:libunwinddev}, ${shlibs:Depends}
 Recommends: ${dep:libcdev}
@@ -175,8 +175,8 @@ ifdef(`TARGET', `dnl
 ifenabled(`cdev',`
 Package: cpp`'PV`'TS
 Architecture: any
-Section: ifdef(`TARGET',`devel',`interpreters')
-Priority: ifdef(`TARGET',`extra',`optional')
+Section: host/tools
+Priority: optional
 Depends: BASEDEP, ${shlibs:Depends}
 Suggests: gcc`'PV-locales (>= ${gcc:SoftVersion})
 Description: The GNU C preprocessor
@@ -193,7 +193,7 @@ ifdef(`TARGET', `dnl
 ifdef(`TARGET', `', `
 Package: gcc`'PV-locales
 Architecture: all
-Section: devel
+Section: core
 Priority: optional
 Depends: SOFTBASEDEP, cpp`'PV (>= ${gcc:SoftVersion})
 Recommends: gcc`'PV (>= ${gcc:SoftVersion})
@@ -210,8 +210,8 @@ ifenabled(`c++',`
 ifenabled(`c++dev',`
 Package: g++`'PV`'TS
 Architecture: any
-Section: devel
-Priority: ifdef(`TARGET',`extra',`optional')
+Section: host/tools
+Priority: optional
 Depends: BASEDEP, gcc`'PV`'TS (= ${gcc:Version}), libstdc++CXX_SO`'PV-dev`'LS (= ${gcc:Version}), ${shlibs:Depends}
 Provides: c++-compiler`'TS, c++abi2-dev
 Suggests: ${gxx:multilib}, gcc`'PV-doc (>= ${gcc:SoftVersion}), libstdc++CXX_SO`'PV-dbg`'LS
