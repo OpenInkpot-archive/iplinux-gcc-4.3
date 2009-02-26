@@ -136,7 +136,7 @@ endif
 
 	dh_compress -p$(p_dev) -p$(p_dbg) -X.txt
 	dh_fixperms -p$(p_dev) -p$(p_dbg)
-	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps -p$(p_dev) -p$(p_dbg) -Xlib32/debug
+	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps -p$(p_dev) -p$(p_dbg)
 
 #
 # Avoid addidng libstdc++6-{dev,dbg} to the debian/files, as they are pure
