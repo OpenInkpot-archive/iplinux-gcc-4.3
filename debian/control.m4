@@ -239,6 +239,13 @@ Description: The GNU Standard C++ Library v3
  libstdc++-v3 is a complete rewrite from the previous libstdc++-v2, which
  was included up to g++-2.95. The first version of libstdc++-v3 appeared
  in g++-3.0.
+
+Package: libstdc++CXX_SO`'LS
+Architecture: any
+Section: host/cross
+Priority: extra
+Description:
+
 ')`'dnl libcxx
 
 ifenabled(`c++dev',`
@@ -256,6 +263,12 @@ Description: The GNU Standard C++ Library v3 (development files)
  was included up to g++-2.95. The first version of libstdc++-v3 appeared
  in g++-3.0.
 
+Package: libstdc++CXX_SO`'PV-dev`'LS
+Architecture: any
+Section: host/cross
+Priority: extra
+Description:
+
 Package: libstdc++CXX_SO`'PV-dbg
 Architecture: any
 Section: debug
@@ -264,6 +277,13 @@ Depends: libstdc++CXX_SO (>= ${gcc:Version}), libgcc`'GCC_SO-dbg, ${shlibs:Depen
 Description: The GNU Standard C++ Library v3 (debugging files)
  This package contains the shared library of libstdc++ compiled with
  debugging symbols.
+
+Package: libstdc++CXX_SO`'PV-dbg`'LS
+Architecture: any
+Section: host/cross
+Priority: extra
+Description:
+
 
 ')`'dnl c++dev
 ')`'dnl c++

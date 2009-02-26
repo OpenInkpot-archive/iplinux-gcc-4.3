@@ -17,6 +17,14 @@ d_lib	= debian/$(p_lib)
 d_dev	= debian/$(p_dev)
 d_dbg	= debian/$(p_dbg)
 
+deb_lib = $(p_lib)_$(DEB_EVERSION)_$(DEB_TARGET_ARCH).deb
+deb_dev = $(p_dev)_$(DEB_EVERSION)_$(DEB_TARGET_ARCH).deb
+deb_dbg = $(p_dbg)_$(DEB_EVERSION)_$(DEB_TARGET_ARCH).deb
+
+deb_libcross = $(p_lib)-$(DEB_TARGET_ARCH)-cross_$(DEB_EVERSION)_all.deb
+deb_devcross = $(p_dev)-$(DEB_TARGET_ARCH)-cross_$(DEB_EVERSION)_all.deb
+deb_dbgcross = $(p_dbg)-$(DEB_TARGET_ARCH)-cross_$(DEB_EVERSION)_all.deb
+
 dirs_dev = \
 	$(PF)/$(libdir) \
 	$(gcc_lib_dir)/include \
@@ -67,6 +75,14 @@ $(binary_stamp)-libstdcxx: $(install_stamp)
 	dh_installdeb -p$(p_lib)
 	dh_md5sums -p$(p_lib)
 	dh_builddeb -p$(p_lib)
+
+#
+# Additionally, libstdc++6 need to be crossed, and cross-librariy added to the
+# .changes file as well. The libstdc++ is not in a "normal" package, so it can't
+# be crossed by unicross.
+#
+	cd .. && dpkg-cross -A -a $(DEB_TARGET_ARCH) -b $(deb_lib)
+	echo "$(deb_libcross) host/cross extra" >> debian/files
 
 	trap '' 1 2 3 15; touch $@; mv $(install_stamp)-tmp $(install_stamp)
 
@@ -121,11 +137,26 @@ endif
 	dh_compress -p$(p_dev) -p$(p_dbg) -X.txt
 	dh_fixperms -p$(p_dev) -p$(p_dbg)
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps -p$(p_dev) -p$(p_dbg) -Xlib32/debug
+
+#
+# Avoid addidng libstdc++6-{dev,dbg} to the debian/files, as they are pure
+# 'host/cross' packages.
+#
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_gencontrol -p$(p_dev) -p$(p_dbg) \
-		-- -v$(DEB_VERSION) $(common_substvars)
+	    -- -fdebian/files.noway -v$(DEB_VERSION) $(common_substvars)
 
 	dh_installdeb -p$(p_dev) -p$(p_dbg)
 	dh_md5sums -p$(p_dev) -p$(p_dbg)
 	dh_builddeb -p$(p_dev) -p$(p_dbg)
+
+#
+# Additionally cross the libstdc++6-dev and -dbg and add them to the .changes
+# file. libstdc++ is not in a "normal" package, so it can't be crossed by
+# unicross.
+#
+	cd .. && dpkg-cross -A -a $(DEB_TARGET_ARCH) -b $(deb_dev)
+	echo "$(deb_devcross) host/cross extra" >> debian/files
+	cd .. && dpkg-cross -A -a $(DEB_TARGET_ARCH) -b $(deb_dbg)
+	echo "$(deb_dbgcross) host/cross extra" >> debian/files
 
 	trap '' 1 2 3 15; touch $@; mv $(install_stamp)-tmp $(install_stamp)
