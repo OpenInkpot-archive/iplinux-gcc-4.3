@@ -198,6 +198,10 @@ ifneq (,$(findstring softfloat,$(DEB_TARGET_GNU_CPU)))
   CONFARGS += --with-float=soft
 endif
 
+ifneq (,$(findstring mipsel-ip-linux-gnu,$(DEB_TARGET_GNU_TYPE)))
+  CONFARGS += --with-float=soft
+endif
+
 ifneq (,$(findstring arm-vfp,$(DEB_TARGET_GNU_CPU)))
   CONFARGS += --with-fpu=vfp
 endif
