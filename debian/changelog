@@ -1,3 +1,11 @@
+gcc-4.3 (4.3.2-1.ip2) asimov; urgency=low
+
+  * Correctly disable sjlj-extensions, whatever it is.
+  * mipsel is softfloat now.
+  * Fixed epoch in libgcc1 shlibs, resulted in apt brain-damageness.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Thu, 02 Apr 2009 04:52:40 +0700
+
 gcc-4.3 (4.3.2-1.ip1) asimov; urgency=low
 
   * First build for Inkpump:
