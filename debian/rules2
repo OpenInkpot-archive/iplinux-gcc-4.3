@@ -206,7 +206,7 @@ ifneq (,$(findstring arm-vfp,$(DEB_TARGET_GNU_CPU)))
   CONFARGS += --with-fpu=vfp
 endif
 
-ifneq (,$(findstring arm-linux-gnueabi,$(DEB_TARGET_GNU_TYPE)))
+ifneq (,$(findstring arm-ip-linux-gnueabi,$(DEB_TARGET_GNU_TYPE)))
   CONFARGS += --disable-sjlj-exceptions
 endif
 
