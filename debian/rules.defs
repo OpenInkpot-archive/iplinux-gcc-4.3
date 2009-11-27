@@ -6,7 +6,7 @@ PWD		:= $(shell pwd)
 srcdir		= $(PWD)/src
 builddir	= $(PWD)/build
 stampdir	= stamps
-distribution	:= $(shell lsb_release -is)
+distribution	:= IPlinux
 
 # architecture dependent variables
 vafilt = $(subst $(2)=,,$(filter $(2)=%,$(1)))
