@@ -24,7 +24,7 @@ Priority: optional
 Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
 Standards-Version: 3.8.0
 ifdef(`TARGET',`dnl cross
-Build-Depends: dpkg-dev (>= 1.14.15), debhelper (>= 5.0.62), dpkg-cross (>= 1.25.99), LIBC_BUILD_DEP, LIBC_BIARCH_BUILD_DEP LIBUNWIND_BUILD_DEP LIBATOMIC_OPS_BUILD_DEP AUTOGEN_BUILD_DEP m4, autoconf, automake1.9, libtool, gawk, lzma, BINUTILS_BUILD_DEP, bison (>= 1:2.3), flex, realpath (>= 1.9.12), lsb-release, make (>= 3.81)
+Build-Depends: debhelper, lzma, autoconf, sharutils, libmpfr-dev, realpath
 ',`dnl native
 Build-Depends: dpkg-dev (>= 1.14.15), debhelper (>= 5.0.62), gcc-multilib [amd64 i386 mips mipsel powerpc ppc64 s390 sparc kfreebsd-amd64], LIBC_BUILD_DEP, LIBC_BIARCH_BUILD_DEP AUTOGEN_BUILD_DEP libunwind7-dev (>= 0.98.5-6) [ia64], libatomic-ops-dev [ia64], m4, autoconf, automake1.9, libtool, gawk, CHECK_BUILD_DEP, lzma, BINUTILS_BUILD_DEP, binutils-hppa64 (>= BINUTILSV) [hppa], gperf (>= 3.0.1), bison (>= 1:2.3), flex, gettext, texinfo (>= 4.3), libmpfr-dev (>= 2.3.0), FORTRAN_BUILD_DEP locales [locale_no_archs], procps [linux_gnu_archs], sharutils, PASCAL_BUILD_DEP JAVA_BUILD_DEP GNAT_BUILD_DEP SPU_BUILD_DEP CLOOG_BUILD_DEP realpath (>= 1.9.12), chrpath, lsb-release, make (>= 3.81)
 Build-Depends-Indep: LIBSTDCXX_BUILD_INDEP JAVA_BUILD_INDEP
