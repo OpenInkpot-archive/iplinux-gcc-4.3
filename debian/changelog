@@ -1,3 +1,10 @@
+gcc-4.3 (4.3.2-1.ip3) asimov; urgency=low
+
+  * Update build-depends to match reality
+  * Avoid using lsb_release to obtain system name.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sat, 28 Nov 2009 05:45:37 +0600
+
 gcc-4.3 (4.3.2-1.ip2) asimov; urgency=low
 
   * Correctly disable sjlj-extensions, whatever it is.
