@@ -1,6 +1,8 @@
 # -*- makefile -*-
 # definitions used in more than one Makefile / rules file
 
+include debian/rules.params
+
 SHELL		= /bin/bash -e	# brace expansion used in rules file
 PWD		:= $(shell pwd)
 srcdir		= $(PWD)/src
@@ -18,31 +20,7 @@ DEB_HOST_GNU_CPU	?= $(call vafilt,$(DPKG_VARS),DEB_HOST_GNU_CPU)
 DEB_HOST_GNU_SYSTEM	?= $(call vafilt,$(DPKG_VARS),DEB_HOST_GNU_SYSTEM)
 DEB_HOST_GNU_TYPE	?= $(call vafilt,$(DPKG_VARS),DEB_HOST_GNU_TYPE)
 
-ifdef DEB_TARGET_GNU_TYPE
-  TARGET_VARS := $(shell dpkg-architecture -f \
-			-t$(DEB_TARGET_GNU_TYPE) 2>/dev/null)
-  DEB_TARGET_ARCH	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_ARCH)
-  DEB_TARGET_ARCH_OS	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_ARCH_OS)
-  DEB_TARGET_ARCH_CPU	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_ARCH_CPU)
-  DEB_TARGET_GNU_CPU	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_GNU_CPU)
-  DEB_TARGET_GNU_TYPE	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_GNU_TYPE)
-  DEB_TARGET_GNU_SYSTEM	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_GNU_SYSTEM)
-else
-
-  # allow debian/target to be used instead of GCC_TARGET - this was requested
-  # by toolchain-source maintainer
-  DEBIAN_TARGET_FILE := $(strip $(if $(wildcard debian/target), \
-				  $(shell cat debian/target 2>/dev/null)))
-
-  ifdef DEB_TARGET_ARCH
-    # empty
-  else ifdef GCC_TARGET
-    DEB_TARGET_ARCH = $(GCC_TARGET)
-  else ifneq ($(DEBIAN_TARGET_FILE),)
-    DEB_TARGET_ARCH := $(DEBIAN_TARGET_FILE)
-  else
-    DEB_TARGET_ARCH = $(DEB_HOST_ARCH)
-  endif
+DEB_TARGET_ARCH = $(GCC_TARGET)
 
   TARGET_VARS := $(shell dpkg-architecture -f \
 			-a$(DEB_TARGET_ARCH) 2>/dev/null)
@@ -52,7 +30,6 @@ else
   DEB_TARGET_GNU_CPU	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_GNU_CPU)
   DEB_TARGET_GNU_TYPE	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_GNU_TYPE)
   DEB_TARGET_GNU_SYSTEM	?= $(call vafilt,$(TARGET_VARS),DEB_HOST_GNU_SYSTEM)
-endif
 
 # ---------------------------------------------------------------------------
 # full canadian
@@ -65,8 +42,6 @@ endif
 # build != host && host != target : canadian (DEB_CROSS == yes)
 # build == host && host == target : native
 
-DEB_CROSS=yes
-
 # ---------------------------------------------------------------------------
 # which binary packages are built?
 
@@ -77,7 +52,6 @@ ifeq ($(DEB_TARGET_ARCH),)
 $(error GCC_TARGET value "$(GCC_TARGET)" is not a valid Debian architecture)
 endif
 
-ifeq ($(DEB_CROSS),yes)
   # TP: Target Prefix. Used primarily as a prefix for cross tool
   #     names (e.g. powerpc-linux-gcc).
   # TS: Target Suffix. Used primarily at the end of cross compiler
@@ -88,31 +62,8 @@ ifeq ($(DEB_CROSS),yes)
   TP =  $(subst _,-,$(DEB_TARGET_GNU_TYPE))-
   TS = -$(subst _,-,$(DEB_TARGET_ALIAS))
   LS = -$(subst _,-,$(DEB_TARGET_ARCH))-cross
-endif
 
-ifeq ($(DEB_CROSS),yes)
   TARGET_ALIAS := $(DEB_TARGET_ALIAS)
-else
-  TARGET_ALIAS := $(DEB_TARGET_GNU_TYPE)
-
-  ifeq ($(TARGET_ALIAS),i386-gnu)
-    TARGET_ALIAS := i586-gnu
-  endif
-
-  #ifeq ($(TARGET_ALIAS),i486-linux-gnu)
-  #  TARGET_ALIAS := i686-linux-gnu
-  #endif
-
-  TARGET_ALIAS := $(subst i386,i486,$(TARGET_ALIAS))
-
-  # configure as linux-gnu, not linux
-  #ifeq ($(findstring linux,$(TARGET_ALIAS))/$(findstring linux-gnu,$(TARGET_ALIAS)),linux/)
-  #  TARGET_ALIAS := $(TARGET_ALIAS)-gnu
-  #endif
-
-  # configure as linux, not linux-gnu
-  #TARGET_ALIAS := $(subst linux-gnu,linux,$(TARGET_ALIAS))
-endif
 
 printarch:
 	@echo DEB_TARGET_ARCH: $(DEB_TARGET_ARCH)
@@ -132,16 +83,8 @@ ifneq ($(PKGSOURCE),gcc-snapshot)
   versioned_packages := yes
 endif
 
-ifeq ($(DEB_CROSS),yes)
   cross_bin_arch := -$(subst _,-,$(TARGET_ALIAS))
   cross_lib_arch := -$(subst _,-,$(DEB_TARGET_ARCH))-cross
-endif
-
-ifneq ($(DEB_CROSS),yes)
-  ifneq ($(PKGSOURCE),gcc-snapshot)
-    with_common_gcclibdir := yes
-  endif
-endif
 
 # Don't include docs with GFDL invariant sections --------------------
 GFDL_INVARIANT_FREE := yes
@@ -203,11 +146,6 @@ ifneq ($(WITH_BOOTSTRAP),)
   # "lean" means a lean 3-stage bootstrap, i.e. delete each stage when no
   # longer needed.
   with_bootstrap=$(WITH_BOOTSTRAP)
-endif
-
-# separate -base package for the cross compiler.
-ifeq ($(DEB_CROSS),yes)
-  with_gccxbase := yes
 endif
 
 # C --------------------

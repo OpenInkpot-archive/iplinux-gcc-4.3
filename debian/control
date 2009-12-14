@@ -1,7 +1,0 @@
-Source: gcc-4.3
-Section: devel
-Priority: optional
-Maintainer: Debian GCC Maintainers <debian-gcc@lists.debian.org>
-Uploaders: Matthias Klose <doko@debian.org>
-Standards-Version: 3.7.3
-Build-Depends: debhelper, lzma, autoconf, sharutils, libmpfr-dev, realpath, chrpath

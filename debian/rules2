@@ -91,9 +91,7 @@ ifeq ($(with_ssp_default),yes)
   LIBCXXFLAGS	= -g -O2 -fno-stack-protector -fno-implicit-templates
 endif
 
-ifeq ($(DEB_CROSS),yes)
   CFLAGS	= -g -O2
-endif
 
 CFLAGS_TO_PASS = \
 	$(if $(CFLAGS),CFLAGS="$(CFLAGS)") \
@@ -138,11 +136,7 @@ endif
 
 checkdir = $(builddir)
 
-ifneq ($(DEB_CROSS),yes)
-  cxx_inc_dir	= $(PF)/include/c++/$(BASE_VERSION)
-else
   cxx_inc_dir	= $(PF)/$(TARGET_ALIAS)/include/c++/$(GCC_VERSION)
-endif
 
 CONFARGS = -v \
 	--with-pkgversion='$(distribution)___$(DEB_VERSION)' \
@@ -269,19 +263,12 @@ else
   CONFARGS += --enable-checking=release
 endif
 
-ifneq ($(DEB_CROSS),yes)
-  CONFARGS += \
-	--build=$(DEB_BUILD_GNU_TYPE) \
-	--host=$(DEB_BUILD_GNU_TYPE) \
-	--target=$(TARGET_ALIAS)
-else
   CONFARGS += \
 	--program-prefix=$(TARGET_ALIAS)- \
 	--includedir=/$(PF)/$(DEB_TARGET_GNU_TYPE)/include \
 	--build=$(DEB_BUILD_GNU_TYPE) \
 	--host=$(DEB_BUILD_GNU_TYPE) \
 	--target=$(TARGET_ALIAS)
-endif
 
 ifeq ($(with_bootstrap),)
   # no profiledbootstrap on the following architectures
@@ -324,9 +311,7 @@ $(configure_stamp):
 	@echo "GCC version: $(GCC_VERSION)"
 	@echo "Base Debian version: $(BASE_VERSION)"
 	@echo -e "Configured with: $(subst ___, ,$(foreach i,$(CONFARGS),$(i)\n\t))"
-ifeq ($(DEB_CROSS),yes)
 	@echo "Building cross compiler for $(DEB_TARGET_ARCH)"
-endif
 	@echo "Using shell $(SHELL)"
 	@echo "Architecture: $(DEB_TARGET_ARCH) (GNU: $(TARGET_ALIAS))"
 	@echo "CPPFLAGS: $(CPPFLAGS)"
@@ -405,9 +390,6 @@ endif
 $(build_stamp): $(configure_stamp) $(build_locale_stamp)
 	dh_testdir
 	rm -f bootstrap-protocol
-# DEB_CROSS is never set if REVERSE_CROSS is set and vice-versa.
-# DEB_CROSS build
-ifeq ($(DEB_CROSS),yes)
 	: # build bootstrap or cross compiler for $(TARGET_ALIAS)
 	( \
 	  set +e; \
@@ -421,85 +403,6 @@ ifeq ($(DEB_CROSS),yes)
 	  echo $$? > status; \
 	) 2>&1 | tee bootstrap-protocol
 	s=`cat status`; rm -f status; test $$s -eq 0
-else
-  # REVERSE_CROSS build
-  ifeq ($(REVERSE_CROSS),yes)
-;	: # build cross compiler for $(TARGET_ALIAS)
-	( \
-	  set +e; \
-	  PATH=$(PWD)/bin:$$PATH \
-	  $(SET_LOCPATH) \
-	    $(MAKE) -C $(builddir) $(NJOBS) \
-		CC="$(CC)" \
-		$(CFLAGS_TO_PASS) \
-		$(LDFLAGS_TO_PASS) \
-		; \
-	  echo $$? > status; \
-	) 2>&1 | tee bootstrap-protocol
-	s=`cat status`; rm -f status; test $$s -eq 0
-else
-  # Native build
-  ifeq ($(with_java),yes)
-	mkdir -p bin
-	ln -sf /usr/bin/fastjar bin/jar
-    ifeq ($(with_native_ecj),yes)
-	: # prepare the standalone ecj jar
-	cp /usr/share/java/ecj.jar $(srcdir)/ecj-standalone.jar
-	zip -d $(srcdir)/ecj-standalone.jar 'org/eclipse/jdt/core/JDTCompilerAdapter*'
-    endif
-	( \
-	  echo '#!/bin/sh'; \
-	  echo 'exec gij-4.2 -cp /usr/share/java/ecj.jar org.eclipse.jdt.internal.compiler.batch.GCCMain "$$@"'; \
-	) > bin/ecj1
-	chmod +x bin/ecj1
-    ifeq ($(with_java_maintainer_mode),yes)
-	: # If we don't have gjavah in PATH, try to build it with the old gij
-	mkdir -p bin
-	if [ -x /usr/bin/gjavah-4.2 ]; then \
-	  ln -sf /usr/bin/gjavah-4.2 bin/gjavah; \
-	elif [ -x bin/gjavah ]; then \
-	  : ; \
-	else \
-	  mkdir -p $(builddir)/java_hacks; \
-	  cd $(builddir)/java_hacks; \
-	  cp -a $(srcdir)/libjava/classpath/tools/external external; \
-	  mkdir -p gnu/classpath/tools; \
-	  cp -a $(srcdir)/libjava/classpath/tools/gnu/classpath/tools/{common,javah,getopt} \
-	    gnu/classpath/tools/; \
-	  cp -a $(srcdir)/libjava/classpath/resource/gnu/classpath/tools/common/Messages.properties \
-	    gnu/classpath/tools/common; \
-	  cd external/asm; \
-	  for i in `find . -name \*.java`; do gcj-4.2 --encoding ISO-8859-1 -C $$i -I.; done; \
-	  cd ../..; \
-	  for i in `find gnu -name \*.java`; do gcj-4.2 -C $$i -I. -Iexternal/asm/; done; \
-	  gcj-4.2 -findirect-dispatch -O2 -fmain=gnu.classpath.tools.javah.Main \
-	    -I. -Iexternal/asm/ `find . -name \*.class` -o $(PWD)/bin/gjavah.real; \
-	  ( \
-	    echo '#!/bin/sh'; \
-	    echo 'export CLASSPATH='`pwd`'$${CLASSPATH:+:$$CLASSPATH}'; \
-	    echo 'exec $(PWD)/bin/gjavah.real "$$@"'; \
-	  ) > $(PWD)/bin/gjavah; \
-	  chmod +x $(PWD)/bin/gjavah; \
-	fi
-    endif
-  endif
-	: # build native compiler
-	( \
-	  set +e; \
-	  PATH=$(PWD)/bin:$$PATH \
-	  $(SET_SHELL) \
-	  $(SET_LOCPATH) \
-	    $(MAKE) -C $(builddir) $(NJOBS) $(bootstrap_target) \
-		CC="$(CC)" \
-		$(CFLAGS_TO_PASS) \
-		$(STAGE1_CFLAGS_TO_PASS) \
-		$(LDFLAGS_TO_PASS) \
-		; \
-	  echo $$? > status; \
-	) 2>&1 | tee bootstrap-protocol
-	s=`cat status`; rm -f status; test $$s -eq 0
-endif
-endif
 	-chmod 755 $(srcdir)/contrib/warn_summary
 	if [ -x $(srcdir)/contrib/warn_summary ]; then \
 	  rm -f bootstrap-summary; \
@@ -542,24 +445,12 @@ ifeq ($(versioned_packages),yes)
   pkg_ver := -$(BASE_VERSION)
 endif
 
-ifneq ($(DEB_CROSS),yes)
-  p_base = gcc$(pkg_ver)-base
-  p_gcc  = gcc$(pkg_ver)
-  p_cpp  = cpp$(pkg_ver)
-  p_cppd = cpp$(pkg_ver)-doc
-  p_cxx  = g++$(pkg_ver)
-  p_doc  = gcc$(pkg_ver)-doc
-  p_lgcc = libgcc$(GCC_SONAME)
-else
   # only triggered if DEB_CROSS set
-  p_base = gcc$(pkg_ver)$(cross_bin_arch)-base
   p_cpp  = cpp$(pkg_ver)$(cross_bin_arch)
   p_gcc  = gcc$(pkg_ver)$(cross_bin_arch)
   p_cxx  = g++$(pkg_ver)$(cross_bin_arch)
-endif
 
 d	= debian/tmp
-d_base	= debian/$(p_base)
 d_gcc	= debian/$(p_gcc)
 d_cpp	= debian/$(p_cpp)
 d_cppd	= debian/$(p_cppd)
@@ -571,10 +462,6 @@ common_substvars = \
 	$(shell awk "{printf \"'-V%s' \", \$$0}" debian/substvars.local)
 
 # ---------------------------------------------------------------------------
-
-ifeq ($(with_gccxbase),yes)
-  include debian/rules.d/binary-base.mk
-endif
 
 ifeq ($(with_libgcc),yes)
 #  include debian/rules.d/binary-libgcc-cross.mk

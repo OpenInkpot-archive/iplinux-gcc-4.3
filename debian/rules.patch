@@ -100,9 +100,7 @@ ifeq ($(DEB_TARGET_ARCH_OS),kfreebsd)
   debian_patches += kbsd-gnu-ada
 endif
 
-ifeq ($(DEB_CROSS),yes)
   debian_patches += cross-include cross-fixes
-endif
 
 #debian_patches += link-libs
 

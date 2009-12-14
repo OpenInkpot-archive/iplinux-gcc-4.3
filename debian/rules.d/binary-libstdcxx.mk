@@ -76,14 +76,6 @@ $(binary_stamp)-libstdcxx: $(install_stamp)
 	dh_md5sums -p$(p_lib)
 	dh_builddeb -p$(p_lib)
 
-#
-# Additionally, libstdc++6 need to be crossed, and cross-librariy added to the
-# .changes file as well. The libstdc++ is not in a "normal" package, so it can't
-# be crossed by unicross.
-#
-	cd .. && dpkg-cross -A -a $(DEB_TARGET_ARCH) -b $(deb_lib)
-	echo "$(deb_libcross) host/cross extra" >> debian/files
-
 	trap '' 1 2 3 15; touch $@; mv $(install_stamp)-tmp $(install_stamp)
 
 # ----------------------------------------------------------------------
@@ -138,25 +130,11 @@ endif
 	dh_fixperms -p$(p_dev) -p$(p_dbg)
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_shlibdeps -p$(p_dev) -p$(p_dbg)
 
-#
-# Avoid addidng libstdc++6-{dev,dbg} to the debian/files, as they are pure
-# 'host/cross' packages.
-#
 	DEB_HOST_ARCH=$(DEB_TARGET_ARCH) dh_gencontrol -p$(p_dev) -p$(p_dbg) \
-	    -- -fdebian/files.noway -v$(DEB_VERSION) $(common_substvars)
+	    -- -v$(DEB_VERSION) $(common_substvars)
 
 	dh_installdeb -p$(p_dev) -p$(p_dbg)
 	dh_md5sums -p$(p_dev) -p$(p_dbg)
 	dh_builddeb -p$(p_dev) -p$(p_dbg)
-
-#
-# Additionally cross the libstdc++6-dev and -dbg and add them to the .changes
-# file. libstdc++ is not in a "normal" package, so it can't be crossed by
-# unicross.
-#
-	cd .. && dpkg-cross -A -a $(DEB_TARGET_ARCH) -b $(deb_dev)
-	echo "$(deb_devcross) host/cross extra" >> debian/files
-	cd .. && dpkg-cross -A -a $(DEB_TARGET_ARCH) -b $(deb_dbg)
-	echo "$(deb_dbgcross) host/cross extra" >> debian/files
 
 	trap '' 1 2 3 15; touch $@; mv $(install_stamp)-tmp $(install_stamp)

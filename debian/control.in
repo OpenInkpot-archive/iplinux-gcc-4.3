@@ -1,0 +1,95 @@
+Source: gcc-__VERSION__
+Section: host/tools
+Priority: optional
+Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
+Standards-Version: 3.8.3
+Build-Depends: bash, debhelper, lzma, autoconf, sharutils, libmpfr-dev, realpath, binutils-multiarch, binutils-toolchain-__TARGET__-cross, linux-libc-dev-__TARGET__-cross __GCC_BUILD_DEPENDS__
+
+Package: libgcc__LIBGCC_SONAME__
+Architecture: all
+Section: core
+Priority: optional
+Depends: ${shlibs:Depends}
+Description: GCC support library
+ Shared version of the support library, a library of internal subroutines
+ that GCC uses to overcome shortcomings of particular machines, or
+ special needs for some languages.
+
+Package: libgcc__LIBGCC_SONAME__-dbg
+Architecture: all
+Section: debug
+Priority: extra
+Depends: libgcc__LIBGCC_SONAME__ (= ${gcc:EpochVersion})
+Description: GCC support library (debug symbols)
+ Debug symbols for the GCC support library.
+
+Package: gcc-__VERSION__-__GNU_TARGET__
+Architecture: any
+Section: host/tools
+Priority: optional
+Depends: cpp-__VERSION__-__GNU_TARGET__ (= ${gcc:Version}), binutils-__GNU_TARGET__ (>= ${binutils:Version}), ${dep:libgcc}, ${dep:libssp}, ${dep:libgomp}, ${dep:libunwinddev}, ${shlibs:Depends}
+Provides: gcc-__VERSION__-__GNU_TARGET__-base __GCC_PROVIDES__
+Description: The GNU C compiler (cross compiler for __TARGET__ architecture)
+ This is the GNU C compiler, a fairly portable optimizing compiler for C.
+ .
+ This package contains C cross-compiler for __TARGET__ architecture.
+
+Package: cpp-__VERSION__-__GNU_TARGET__
+Architecture: any
+Section: host/tools
+Priority: optional
+Depends: ${shlibs:Depends}
+Description: The GNU C preprocessor
+ A macro processor that is used automatically by the GNU C compiler
+ to transform programs before actual compilation.
+ .
+ This package has been separated from gcc for the benefit of those who
+ require the preprocessor but not the compiler.
+ .
+ This package contains preprocessor configured for __TARGET__ architecture.
+
+Package: g++-__VERSION__-__GNU_TARGET__
+Architecture: any
+Section: host/tools
+Priority: optional
+Depends: gcc-__VERSION__-__GNU_TARGET__ (= ${gcc:Version}), libstdc++__CXX_SONAME__-__VERSION__-dev-__TARGET__-cross (= ${gcc:Version}), ${shlibs:Depends}
+Description: The GNU C++ compiler (cross compiler for __TARGET__ architecture)
+ This is the GNU C++ compiler, a fairly portable optimizing compiler for C++.
+ .
+ This package contains C++ cross-compiler for __TARGET__ architecture.
+
+Package: libstdc++__CXX_SONAME__
+Architecture: any
+Section: core
+Priority: required
+Depends: ${shlibs:Depends}
+Description: The GNU Standard C++ Library v3
+ This package contains an additional runtime library for C++ programs
+ built with the GNU compiler.
+ .
+ libstdc++-v3 is a complete rewrite from the previous libstdc++-v2, which
+ was included up to g++-2.95. The first version of libstdc++-v3 appeared
+ in g++-3.0.
+
+Package: libstdc++__CXX_SONAME__-__VERSION__-dev
+Architecture: any
+Section: libdevel
+Priority: optional
+Depends: libstdc++__CXX_SONAME__ (>= ${gcc:Version}), ${dep:libcdev}
+Provides: libstdc++-dev
+Description: The GNU Standard C++ Library v3 (development files)
+ This package contains the headers and static library files necessary for
+ building C++ programs which use libstdc++.
+ .
+ libstdc++-v3 is a complete rewrite from the previous libstdc++-v2, which
+ was included up to g++-2.95. The first version of libstdc++-v3 appeared
+ in g++-3.0.
+
+Package: libstdc++__CXX_SONAME__-__VERSION__-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends: libstdc++__CXX_SONAME__ (>= ${gcc:Version}), libgcc__LIBGCC_SONAME__-dbg, ${shlibs:Depends}
+Description: The GNU Standard C++ Library v3 (debugging files)
+ This package contains the shared library of libstdc++ compiled with
+ debugging symbols.
