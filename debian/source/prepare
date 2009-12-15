@@ -52,4 +52,4 @@ sed -e "s/__VERSION__/${VERSION}/g" \
 DIR=$(basename $(pwd))
 (cd ..; dpkg-source -b "$DIR")
 
-#rm debian/rules.params debian/control
+rm debian/rules.params debian/control
