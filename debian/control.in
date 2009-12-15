@@ -6,7 +6,7 @@ Standards-Version: 3.8.3
 Build-Depends: bash, debhelper, lzma, autoconf, sharutils, libmpfr-dev, realpath, binutils-multiarch, binutils-toolchain-__TARGET__-cross, linux-libc-dev-__TARGET__-cross __GCC_BUILD_DEPENDS__
 
 Package: libgcc__LIBGCC_SONAME__
-Architecture: all
+Architecture: any
 Section: core
 Priority: optional
 Depends: ${shlibs:Depends}
@@ -16,7 +16,7 @@ Description: GCC support library
  special needs for some languages.
 
 Package: libgcc__LIBGCC_SONAME__-dbg
-Architecture: all
+Architecture: any
 Section: debug
 Priority: extra
 Depends: libgcc__LIBGCC_SONAME__ (= ${gcc:EpochVersion})
