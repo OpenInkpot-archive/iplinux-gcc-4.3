@@ -1,9 +1,11 @@
-gcc-4.3 (4.3.2-1.ip3) asimov; urgency=low
+gcc-4.3 (4.3.2-1.ip3) zelazny; urgency=low
 
   * Update build-depends to match reality
   * Avoid using lsb_release to obtain system name.
+  * Build system cleanup
+  * Add debian/source/prepare
 
- -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sat, 28 Nov 2009 05:45:37 +0600
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sun, 20 Dec 2009 19:51:51 +0600
 
 gcc-4.3 (4.3.2-1.ip2) asimov; urgency=low
 
