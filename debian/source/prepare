@@ -24,6 +24,7 @@ LIBGCC_SONAME=1
 case $MODE in
     bootstrap)
         DEB_CROSS_BOOTSTRAP="DEB_CROSS_BOOTSTRAP := yes"
+        GCC_BUILD_DEPENDS=", libc6-dev-headers-$TARGET-cross"
         GCC_PROVIDES=", gcc-bootstrap-toolchain-$TARGET-cross"
         ;;
     final)
