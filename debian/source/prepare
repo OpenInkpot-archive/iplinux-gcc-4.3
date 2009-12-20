@@ -10,7 +10,7 @@ fi
 TARGET=$1
 MODE=$2
 
-GNU_TARGET=$(dpkg-architecture -a${TARGET} -qDEB_HOST_GNU_TYPE)
+GNU_TARGET=$(dpkg-architecture -a${TARGET} -qDEB_HOST_GNU_TYPE | sed -e 's/_/-/g')
 
 if [ -z $GNU_TARGET ]; then
     echo "Target architecture ($TARGET) does not have associated GNU target"
