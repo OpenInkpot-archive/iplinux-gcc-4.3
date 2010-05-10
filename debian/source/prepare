@@ -37,6 +37,8 @@ case $MODE in
         ;;
 esac
 
+rm debian/rules.params debian/control
+
 sed -e "s/__GCC_TARGET__/${TARGET}/g" \
     -e "s/__DEB_CROSS_BOOTSTRAP__/${DEB_CROSS_BOOTSTRAP}/g" \
     < debian/rules.params.in > debian/rules.params
@@ -50,7 +52,3 @@ sed -e "s/__VERSION__/${VERSION}/g" \
     -e "s/__GCC_BUILD_DEPENDS__/${GCC_BUILD_DEPENDS}/g" \
     < debian/control.in > debian/control
 
-DIR=$(basename $(pwd))
-(cd ..; dpkg-source -b "$DIR")
-
-rm debian/rules.params debian/control
