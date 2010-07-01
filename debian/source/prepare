@@ -17,6 +17,12 @@ if [ -z $GNU_TARGET ]; then
     exit 1
 fi
 
+if [ `echo $TARGET | grep 'uc*'` ]; then
+    LIBC="uclibc0"
+else
+    LIBC="libc6"
+fi
+
 VERSION=4.3
 CXX_SONAME=6
 LIBGCC_SONAME=1
@@ -24,11 +30,11 @@ LIBGCC_SONAME=1
 case $MODE in
     bootstrap)
         DEB_CROSS_BOOTSTRAP="DEB_CROSS_BOOTSTRAP := yes"
-        GCC_BUILD_DEPENDS=", libc6-dev-headers-$TARGET-cross"
+        GCC_BUILD_DEPENDS=", $LIBC-dev-headers-$TARGET-cross"
         GCC_PROVIDES=", gcc-bootstrap-toolchain-$TARGET-cross"
         ;;
     final)
-        GCC_BUILD_DEPENDS=", libc6-dev-$TARGET-cross"
+        GCC_BUILD_DEPENDS=", $LIBC-dev-$TARGET-cross"
         GCC_PROVIDES=", gcc-toolchain-$TARGET-cross"
         ;;
     *)
