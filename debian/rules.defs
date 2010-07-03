@@ -242,7 +242,7 @@ languages_without_lang_opt := c++ proto
 export debian_extra_langs
 
 # GNU locales
-force_gnu_locales := yes
+force_gnu_locales := no
 locale_no_systems :=
 ifneq (, $(filter $(DEB_TARGET_GNU_SYSTEM),$(locale_no_systems)))
   force_gnu_locales := disabled for $(DEB_TARGET_GNU_SYSTEM)
