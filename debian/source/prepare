@@ -34,7 +34,7 @@ case $MODE in
         GCC_PROVIDES=", gcc-bootstrap-toolchain-$TARGET-cross"
         ;;
     final)
-        GCC_BUILD_DEPENDS=", $LIBC-dev-$TARGET-cross"
+        GCC_BUILD_DEPENDS=", $LIBC-$TARGET-cross"
         GCC_PROVIDES=", gcc-toolchain-$TARGET-cross"
         ;;
     *)
