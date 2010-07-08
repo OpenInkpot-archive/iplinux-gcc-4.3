@@ -64,3 +64,7 @@ multiarch-include.dpatch -p0
 libjava-nobiarch-check.dpatch -p0
 config-ml.dpatch -p0
 gcc-multilib64dir.dpatch -p0
+uclibc-locale.dpatch -p1
+uclibc-locale-no__x.dpatch -p1
+uclibc-locale-wchar_fix.dpatch -p1
+uclibc-locale-update.dpatch -p1

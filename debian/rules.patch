@@ -71,6 +71,10 @@ debian_patches += \
 	libjava-extra-cflags \
 	pr35965 \
 	m68k-allow-gnu99 \
+	uclibc-locale \
+	uclibc-locale-no__x \
+	uclibc-locale-wchar_fix \
+	uclibc-locale-update \
 
 ifeq ($(DEB_TARGET_ARCH),alpha)
   debian_patches += alpha-ieee mudflap-nocheck pr34571
