@@ -176,9 +176,7 @@ ifneq ($(with_bootstrap),)
   CONFARGS += --enable-bootstrap=$(with_bootstrap)
 endif
 
-ifeq ($(force_gnu_locales),yes)
-  CONFARGS += --enable-clocale=gnu
-endif
+CONFARGS += --enable-clocale=$(c_locale)
 
 ifeq ($(with_cxx)-$(with_debug),yes-yes)
   CONFARGS += --enable-libstdcxx-debug
