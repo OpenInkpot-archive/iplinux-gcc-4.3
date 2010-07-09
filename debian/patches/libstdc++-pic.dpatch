@@ -23,11 +23,10 @@ case "$1" in
 esac
 exit 0
 
-diff -ur libstdc++-v3/src/Makefile.am libstdc++-v3/src/Makefile.am
---- libstdc++-v3/src/Makefile.am~	2004-04-16 21:04:05.000000000 +0200
-+++ libstdc++-v3/src/Makefile.am	2004-07-03 20:22:43.000000000 +0200
-@@ -210,6 +210,10 @@
- 	  $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+--- libstdc++-v3/src/Makefile.am.orig	2010-05-23 07:31:19.363585996 +0000
++++ libstdc++-v3/src/Makefile.am	2010-05-23 07:31:43.193585912 +0000
+@@ -289,6 +289,10 @@
+ 	  $(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
  
  
 +install-exec-local:
@@ -37,10 +36,9 @@ diff -ur libstdc++-v3/src/Makefile.am libstdc++-v3/src/Makefile.am
  # Added bits to build debug library.
  if GLIBCXX_BUILD_DEBUG
  all-local: build_debug
-diff -ur libstdc++-v3/src/Makefile.in libstdc++-v3/src/Makefile.in
---- libstdc++-v3/src/Makefile.in	2004-07-03 06:41:13.000000000 +0200
-+++ libstdc++-v3/src/Makefile.in	2004-07-03 20:25:05.000000000 +0200
-@@ -611,7 +611,7 @@
+--- libstdc++-v3/src/Makefile.in.orig	2010-05-23 07:31:19.363585996 +0000
++++ libstdc++-v3/src/Makefile.in	2010-05-23 07:33:39.421085830 +0000
+@@ -646,7 +646,7 @@
  
  install-data-am: install-data-local
  
@@ -49,15 +47,15 @@ diff -ur libstdc++-v3/src/Makefile.in libstdc++-v3/src/Makefile.in
  
  install-info: install-info-am
  
-@@ -644,6 +644,7 @@
- 	distclean-libtool distclean-tags distdir dvi dvi-am html \
- 	html-am info info-am install install-am install-data \
- 	install-data-am install-data-local install-exec \
+@@ -679,6 +679,7 @@
+ 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
+ 	info-am install install-am install-data install-data-am \
+ 	install-data-local install-exec install-exec-am install-info \
 +	install-exec-local \
- 	install-exec-am install-info install-info-am install-man \
- 	install-strip install-toolexeclibLTLIBRARIES installcheck \
- 	installcheck-am installdirs maintainer-clean \
-@@ -729,6 +730,11 @@
+ 	install-info-am install-man install-strip \
+ 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+ 	installdirs maintainer-clean maintainer-clean-generic \
+@@ -811,6 +812,11 @@
  install_debug:
  	(cd ${debugdir} && $(MAKE) \
  	toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install)

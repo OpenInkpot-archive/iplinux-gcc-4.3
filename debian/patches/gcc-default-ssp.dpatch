@@ -24,38 +24,8 @@ case "$1" in
 esac
 exit 0
 
---- gcc/objcp/lang-specs.h.orig	2007-08-02 12:38:44.000000000 +0200
-+++ gcc/objcp/lang-specs.h	2008-05-10 09:00:53.022165860 +0200
-@@ -36,7 +36,7 @@
- 		%(cpp_options) %2 -o %{save-temps:%b.mii} %{!save-temps:%g.mii} \n}\
-       cc1objplus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.mii} %{!save-temps:%g.mii}}\
- 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
--	%(cc1_options) %2 %{+e1*}\
-+	%(cc1_options) %(ssp_default) %2 %{+e1*}\
-         -o %g.s %{!o*:--output-pch=%i.gch} %W{o*:--output-pch=%*}%V}}}",
-      CPLUSPLUS_CPP_SPEC, 0, 0},
-   {"@objective-c++",
-@@ -46,15 +46,15 @@
- 		%(cpp_options) %2 -o %{save-temps:%b.mii} %{!save-temps:%g.mii} \n}\
-       cc1objplus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.mii} %{!save-temps:%g.mii}}\
- 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
--	%(cc1_options) %2 %{+e1*}\
-+	%(cc1_options) %(ssp_default) %2 %{+e1*}\
-        %{!fsyntax-only:%(invoke_as)}}}}",
-      CPLUSPLUS_CPP_SPEC, 0, 0},
-   {".mii", "@objective-c++-cpp-output", 0, 0, 0},
-   {"@objective-c++-cpp-output",
-    "%{!M:%{!MM:%{!E:\
--    cc1objplus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
-+    cc1objplus -fpreprocessed %i %(cc1_options) %(ssp_default) %2 %{+e*}\
-     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
-   {"@objc++-cpp-output",
-    "%{!M:%{!MM:%{!E:\
--    cc1objplus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
-+    cc1objplus -fpreprocessed %i %(cc1_options) %(ssp_default) %2 %{+e*}\
-     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
---- gcc/objc/lang-specs.h.orig	2007-08-02 12:37:36.000000000 +0200
-+++ gcc/objc/lang-specs.h	2008-05-10 09:00:53.022165860 +0200
+--- gcc/objc/lang-specs.h.orig	2009-03-23 01:21:54.000000000 +0100
++++ gcc/objc/lang-specs.h	2009-03-23 01:22:16.000000000 +0100
 @@ -30,13 +30,13 @@
  	%{traditional|ftraditional|traditional-cpp:\
  %eGNU Objective C no longer supports traditional compilation}\
@@ -86,8 +56,108 @@ exit 0
 +	    cc1obj %(cpp_unique_options) %(cc1_options) %(ssp_default) %{print-objc-runtime-info} %{gen-decls}\
                          -o %g.s %{!o*:--output-pch=%i.gch}\
                          %W{o*:--output-pch=%*}%V}}}}}", 0, 0, 0},
---- gcc/cp/lang-specs.h.orig	2007-08-06 13:10:19.000000000 +0200
-+++ gcc/cp/lang-specs.h	2008-05-10 09:00:53.022165860 +0200
+--- gcc/objcp/lang-specs.h.orig	2009-03-23 01:21:54.000000000 +0100
++++ gcc/objcp/lang-specs.h	2009-03-23 01:22:16.000000000 +0100
+@@ -36,7 +36,7 @@
+ 		%(cpp_options) %2 -o %{save-temps:%b.mii} %{!save-temps:%g.mii} \n}\
+       cc1objplus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.mii} %{!save-temps:%g.mii}}\
+ 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
+-	%(cc1_options) %2 %{+e1*}\
++	%(cc1_options) %(ssp_default) %2 %{+e1*}\
+         -o %g.s %{!o*:--output-pch=%i.gch} %W{o*:--output-pch=%*}%V}}}",
+      CPLUSPLUS_CPP_SPEC, 0, 0},
+   {"@objective-c++",
+@@ -46,15 +46,15 @@
+ 		%(cpp_options) %2 -o %{save-temps:%b.mii} %{!save-temps:%g.mii} \n}\
+       cc1objplus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.mii} %{!save-temps:%g.mii}}\
+ 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
+-	%(cc1_options) %2 %{+e1*}\
++	%(cc1_options) %(ssp_default) %2 %{+e1*}\
+        %{!fsyntax-only:%(invoke_as)}}}}",
+      CPLUSPLUS_CPP_SPEC, 0, 0},
+   {".mii", "@objective-c++-cpp-output", 0, 0, 0},
+   {"@objective-c++-cpp-output",
+    "%{!M:%{!MM:%{!E:\
+-    cc1objplus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
++    cc1objplus -fpreprocessed %i %(cc1_options) %(ssp_default) %2 %{+e*}\
+     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+   {"@objc++-cpp-output",
+    "%{!M:%{!MM:%{!E:\
+-    cc1objplus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
++    cc1objplus -fpreprocessed %i %(cc1_options) %(ssp_default) %2 %{+e*}\
+     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+--- gcc/gcc.c.orig	2009-03-23 01:21:54.000000000 +0100
++++ gcc/gcc.c	2009-03-23 01:24:02.000000000 +0100
+@@ -696,6 +696,14 @@
+ #define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G"
+ #endif
+ 
++#ifndef SSP_DEFAULT_SPEC
++#ifdef TARGET_LIBC_PROVIDES_SSP
++#define SSP_DEFAULT_SPEC "%{!fno-stack-protector:%{!nostdlib:-fstack-protector}}"
++#else
++#define SSP_DEFAULT_SPEC ""
++#endif
++#endif
++
+ #ifndef LINK_SSP_SPEC
+ #ifdef TARGET_LIBC_PROVIDES_SSP
+ #define LINK_SSP_SPEC "%{fstack-protector:}"
+@@ -757,6 +765,7 @@
+ static const char *cc1plus_spec = CC1PLUS_SPEC;
+ static const char *link_gcc_c_sequence_spec = LINK_GCC_C_SEQUENCE_SPEC;
+ static const char *link_ssp_spec = LINK_SSP_SPEC;
++static const char *ssp_default_spec = SSP_DEFAULT_SPEC;
+ static const char *asm_spec = ASM_SPEC;
+ static const char *asm_final_spec = ASM_FINAL_SPEC;
+ static const char *link_spec = LINK_SPEC;
+@@ -812,7 +821,7 @@
+ static const char *cpp_options =
+ "%(cpp_unique_options) %1 %{m*} %{std*&ansi&trigraphs} %{W*&pedantic*} %{w}\
+  %{f*} %{g*:%{!g0:%{!fno-working-directory:-fworking-directory}}} %{O*}\
+- %{undef} %{save-temps:-fpch-preprocess}";
++ %{undef} %{save-temps:-fpch-preprocess} %(ssp_default)";
+ 
+ /* This contains cpp options which are not passed when the preprocessor
+    output will be used by another program.  */
+@@ -991,15 +1000,15 @@
+ 	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+ 		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i} \n\
+ 		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} \
+-			%(cc1_options)}\
++			%(cc1_options) %(ssp_default)}\
+ 	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
+-		cc1 %(cpp_unique_options) %(cc1_options)}}}\
++		cc1 %(cpp_unique_options) %(cc1_options) %(ssp_default)}}}\
+           %{!fsyntax-only:%(invoke_as)}} \
+       %{combine:\
+ 	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+ 		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i}}\
+ 	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
+-		cc1 %(cpp_unique_options) %(cc1_options)}}\
++		cc1 %(cpp_unique_options) %(cc1_options) %(ssp_default)}}\
+                 %{!fsyntax-only:%(invoke_as)}}}}}}", 0, 1, 1},
+   {"-",
+    "%{!E:%e-E or -x required when input is from standard input}\
+@@ -1022,7 +1031,7 @@
+                     %W{o*:--output-pch=%*}%V}}}}}}", 0, 0, 0},
+   {".i", "@cpp-output", 0, 1, 0},
+   {"@cpp-output",
+-   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 0},
++   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %(ssp_default) %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 0},
+   {".s", "@assembler", 0, 1, 0},
+   {"@assembler",
+    "%{!M:%{!MM:%{!E:%{!S:as %(asm_debug) %(asm_options) %i %A }}}}", 0, 1, 0},
+@@ -1582,6 +1591,7 @@
+   INIT_STATIC_SPEC ("cc1plus",			&cc1plus_spec),
+   INIT_STATIC_SPEC ("link_gcc_c_sequence",	&link_gcc_c_sequence_spec),
+   INIT_STATIC_SPEC ("link_ssp",			&link_ssp_spec),
++  INIT_STATIC_SPEC ("ssp_default",		&ssp_default_spec),
+   INIT_STATIC_SPEC ("endfile",			&endfile_spec),
+   INIT_STATIC_SPEC ("link",			&link_spec),
+   INIT_STATIC_SPEC ("lib",			&lib_spec),
+--- gcc/cp/lang-specs.h.orig	2009-03-23 01:21:54.000000000 +0100
++++ gcc/cp/lang-specs.h	2009-03-23 01:22:16.000000000 +0100
 @@ -47,7 +47,7 @@
  		%(cpp_options) %2 -o %{save-temps:%b.ii} %{!save-temps:%g.ii} \n}\
        cc1plus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.ii} %{!save-temps:%g.ii}}\
@@ -111,6 +181,24 @@ exit 0
 -    cc1plus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
 +    cc1plus -fpreprocessed %i %(cc1_options) %(ssp_default) %2 %{+e*}\
      %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+--- gcc/Makefile.in.orig	2009-03-23 01:21:54.000000000 +0100
++++ gcc/Makefile.in	2009-03-23 01:22:16.000000000 +0100
+@@ -584,6 +584,7 @@
+ LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) \
+ 		 $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) \
+ 		 -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED \
++		 -fno-stack-protector \
+ 		 $(INHIBIT_LIBC_CFLAGS)
+ 
+ # Additional options to use when compiling libgcc2.a.
+@@ -597,6 +598,7 @@
+ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+   -finhibit-size-directive -fno-inline-functions -fno-exceptions \
+   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
++  -fno-stack-protector \
+   $(INHIBIT_LIBC_CFLAGS)
+ 
+ # Additional sources to handle exceptions; overridden by targets as needed.
 --- gcc/doc/invoke.texi.orig	2008-05-10 08:59:35.450995716 +0200
 +++ gcc/doc/invoke.texi	2008-05-10 09:00:53.022165860 +0200
 @@ -6725,6 +6725,10 @@
@@ -124,82 +212,3 @@ exit 0
  @item -fstack-protector-all
  @opindex fstack-protector-all
  Like @option{-fstack-protector} except that all functions are protected.
---- gcc/Makefile.in.orig	2008-05-10 08:58:58.860443756 +0200
-+++ gcc/Makefile.in	2008-05-10 09:00:53.022165860 +0200
-@@ -564,6 +564,7 @@
- LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) \
- 		 $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) \
- 		 -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED \
-+		 -fno-stack-protector \
- 		 $(INHIBIT_LIBC_CFLAGS)
- 
- # Additional options to use when compiling libgcc2.a.
-@@ -577,6 +578,7 @@
- CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-   -finhibit-size-directive -fno-inline-functions -fno-exceptions \
-   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
-+  -fno-stack-protector \
-   $(INHIBIT_LIBC_CFLAGS)
- 
- # Additional sources to handle exceptions; overridden by targets as needed.
---- gcc/gcc.c.orig	2008-05-10 08:59:35.440995565 +0200
-+++ gcc/gcc.c	2008-05-10 09:09:13.819720277 +0200
-@@ -693,6 +693,14 @@
- #define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G"
- #endif
- 
-+#ifndef SSP_DEFAULT_SPEC
-+#ifdef TARGET_LIBC_PROVIDES_SSP
-+#define SSP_DEFAULT_SPEC "%{!fno-stack-protector:%{!nostdlib:-fstack-protector}}"
-+#else
-+#define SSP_DEFAULT_SPEC ""
-+#endif
-+#endif
-+
- #ifndef LINK_SSP_SPEC
- #ifdef TARGET_LIBC_PROVIDES_SSP
- #define LINK_SSP_SPEC "%{fstack-protector:}"
-@@ -763,6 +771,7 @@
- static const char *cc1plus_spec = CC1PLUS_SPEC;
- static const char *link_gcc_c_sequence_spec = LINK_GCC_C_SEQUENCE_SPEC;
- static const char *link_ssp_spec = LINK_SSP_SPEC;
-+static const char *ssp_default_spec = SSP_DEFAULT_SPEC;
- static const char *asm_spec = ASM_SPEC;
- static const char *asm_final_spec = ASM_FINAL_SPEC;
- static const char *link_spec = LINK_SPEC;
-@@ -999,15 +1008,15 @@
- 	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
- 		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i} \n\
- 		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} \
--			%(cc1_options)}\
-+			%(cc1_options) %(ssp_default)}\
- 	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
--		cc1 %(cpp_unique_options) %(cc1_options)}}}\
-+		cc1 %(cpp_unique_options) %(cc1_options) %(ssp_default)}}}\
-           %{!fsyntax-only:%(invoke_as)}} \
-       %{combine:\
- 	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
- 		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i}}\
- 	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
--		cc1 %(cpp_unique_options) %(cc1_options)}}\
-+		cc1 %(cpp_unique_options) %(cc1_options) %(ssp_default)}}\
-                 %{!fsyntax-only:%(invoke_as)}}}}}}", 0, 1, 1},
-   {"-",
-    "%{!E:%e-E or -x required when input is from standard input}\
-@@ -1030,7 +1039,7 @@
-                     %W{o*:--output-pch=%*}%V}}}}}}", 0, 0, 0},
-   {".i", "@cpp-output", 0, 1, 0},
-   {"@cpp-output",
--   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 0},
-+   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %(ssp_default) %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 0},
-   {".s", "@assembler", 0, 1, 0},
-   {"@assembler",
-    "%{!M:%{!MM:%{!E:%{!S:as %(asm_debug) %(asm_options) %i %A }}}}", 0, 1, 0},
-@@ -1590,6 +1599,7 @@
-   INIT_STATIC_SPEC ("cc1plus",			&cc1plus_spec),
-   INIT_STATIC_SPEC ("link_gcc_c_sequence",	&link_gcc_c_sequence_spec),
-   INIT_STATIC_SPEC ("link_ssp",			&link_ssp_spec),
-+  INIT_STATIC_SPEC ("ssp_default",		&ssp_default_spec),
-   INIT_STATIC_SPEC ("endfile",			&endfile_spec),
-   INIT_STATIC_SPEC ("link",			&link_spec),
-   INIT_STATIC_SPEC ("lib",			&lib_spec),

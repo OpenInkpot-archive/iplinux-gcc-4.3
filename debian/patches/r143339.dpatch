@@ -1,0 +1,156 @@
+#! /bin/sh -e
+
+# DP: ARM: don't synthesize thumb-2 ldrd/strd with two 32-bit instructions.
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+
+2009-01-13  Richard Earnshaw  <rearnsha@arm.com>
+ 
+	* arm.c (output_move_double): Don't synthesize thumb-2 ldrd/strd with
+	two 32-bit instructions.
+
+Index: gcc/config/arm/arm.c
+===================================================================
+--- gcc/config/arm/arm.c	(revision 149318)
++++ gcc/config/arm/arm.c	(working copy)
+@@ -5914,7 +5914,7 @@
+       break;					\
+     }
+ 
+-  unsigned int i, elsize, idx = 0, n_elts = CONST_VECTOR_NUNITS (op);
++  unsigned int i, elsize = 0, idx = 0, n_elts = CONST_VECTOR_NUNITS (op);
+   unsigned int innersize = GET_MODE_SIZE (GET_MODE_INNER (mode));
+   unsigned char bytes[16];
+   int immtype = -1, matches;
+@@ -9902,36 +9902,36 @@
+ 		}
+ 	      else
+ 		{
+-		  /* IWMMXT allows offsets larger than ldrd can handle,
+-		     fix these up with a pair of ldr.  */
+-		  if (GET_CODE (otherops[2]) == CONST_INT
+-		      && (INTVAL(otherops[2]) <= -256
+-			  || INTVAL(otherops[2]) >= 256))
++		  /* Use a single insn if we can.
++		     FIXME: IWMMXT allows offsets larger than ldrd can
++		     handle, fix these up with a pair of ldr.  */
++		  if (TARGET_THUMB2
++		      || GET_CODE (otherops[2]) != CONST_INT
++		      || (INTVAL (otherops[2]) > -256
++			  && INTVAL (otherops[2]) < 256))
++		    output_asm_insn ("ldr%(d%)\t%0, [%1, %2]!", otherops);
++		  else
+ 		    {
+ 		      output_asm_insn ("ldr%?\t%0, [%1, %2]!", otherops);
+-		      otherops[0] = gen_rtx_REG (SImode, 1 + reg0);
+-		      output_asm_insn ("ldr%?\t%0, [%1, #4]", otherops);
++		      output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+ 		    }
+-		  else
+-		    output_asm_insn ("ldr%(d%)\t%0, [%1, %2]!", otherops);
+ 		}
+ 	    }
+ 	  else
+ 	    {
+-	      /* IWMMXT allows offsets larger than ldrd can handle,
++	      /* Use a single insn if we can.
++		 FIXME: IWMMXT allows offsets larger than ldrd can handle,
+ 		 fix these up with a pair of ldr.  */
+-	      if (GET_CODE (otherops[2]) == CONST_INT
+-		  && (INTVAL(otherops[2]) <= -256
+-		      || INTVAL(otherops[2]) >= 256))
++	      if (TARGET_THUMB2
++		  || GET_CODE (otherops[2]) != CONST_INT
++		  || (INTVAL (otherops[2]) > -256
++		      && INTVAL (otherops[2]) < 256))
++		output_asm_insn ("ldr%(d%)\t%0, [%1], %2", otherops);
++	      else
+ 		{
+-		  otherops[0] = gen_rtx_REG (SImode, 1 + reg0);
+-		  output_asm_insn ("ldr%?\t%0, [%1, #4]", otherops);
+-		  otherops[0] = operands[0];
++		  output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+ 		  output_asm_insn ("ldr%?\t%0, [%1], %2", otherops);
+ 		}
+-	      else
+-		/* We only allow constant increments, so this is safe.  */
+-		output_asm_insn ("ldr%(d%)\t%0, [%1], %2", otherops);
+ 	    }
+ 	  break;
+ 
+@@ -9973,6 +9973,7 @@
+ 		    }
+ 		  if (TARGET_LDRD
+ 		      && (GET_CODE (otherops[2]) == REG
++			  || TARGET_THUMB2
+ 			  || (GET_CODE (otherops[2]) == CONST_INT
+ 			      && INTVAL (otherops[2]) > -256
+ 			      && INTVAL (otherops[2]) < 256)))
+@@ -10071,23 +10072,19 @@
+ 
+ 	  /* IWMMXT allows offsets larger than ldrd can handle,
+ 	     fix these up with a pair of ldr.  */
+-	  if (GET_CODE (otherops[2]) == CONST_INT
++	  if (!TARGET_THUMB2
++	      && GET_CODE (otherops[2]) == CONST_INT
+ 	      && (INTVAL(otherops[2]) <= -256
+ 		  || INTVAL(otherops[2]) >= 256))
+ 	    {
+-	      rtx reg1;
+-	      reg1 = gen_rtx_REG (SImode, 1 + REGNO (operands[1]));
+ 	      if (GET_CODE (XEXP (operands[0], 0)) == PRE_MODIFY)
+ 		{
+ 		  output_asm_insn ("ldr%?\t%0, [%1, %2]!", otherops);
+-		  otherops[0] = reg1;
+-		  output_asm_insn ("ldr%?\t%0, [%1, #4]", otherops);
++		  output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+ 		}
+ 	      else
+ 		{
+-		  otherops[0] = reg1;
+-		  output_asm_insn ("ldr%?\t%0, [%1, #4]", otherops);
+-		  otherops[0] = operands[1];
++		  output_asm_insn ("ldr%?\t%H0, [%1, #4]", otherops);
+ 		  output_asm_insn ("ldr%?\t%0, [%1], %2", otherops);
+ 		}
+ 	    }
+@@ -10122,6 +10119,7 @@
+ 	    }
+ 	  if (TARGET_LDRD
+ 	      && (GET_CODE (otherops[2]) == REG
++		  || TARGET_THUMB2
+ 		  || (GET_CODE (otherops[2]) == CONST_INT
+ 		      && INTVAL (otherops[2]) > -256
+ 		      && INTVAL (otherops[2]) < 256)))
+@@ -10135,9 +10133,9 @@
+ 
+         default:
+ 	  otherops[0] = adjust_address (operands[0], SImode, 4);
+-	  otherops[1] = gen_rtx_REG (SImode, 1 + REGNO (operands[1]));
++	  otherops[1] = operands[1];
+ 	  output_asm_insn ("str%?\t%1, %0", operands);
+-	  output_asm_insn ("str%?\t%1, %0", otherops);
++	  output_asm_insn ("str%?\t%H1, %0", otherops);
+ 	}
+     }
+ 

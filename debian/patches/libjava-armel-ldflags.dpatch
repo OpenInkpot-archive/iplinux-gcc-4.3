@@ -13,7 +13,7 @@ fi
 case "$1" in
     -patch)
         patch $pdir -f --no-backup-if-mismatch -p0 < $0
-        cd ${dir}libjava && autoconf
+        cd ${dir}libjava && autoconf2.59
         ;;
     -unpatch)
         patch $pdir -f --no-backup-if-mismatch -R -p0 < $0

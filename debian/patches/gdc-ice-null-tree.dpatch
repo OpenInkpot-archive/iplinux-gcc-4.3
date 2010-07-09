@@ -1,0 +1,53 @@
+#! /bin/sh -e
+
+# gdc-ice-null-tree by Iain Buclaw <ibuclaw@ubuntu.com>
+# DP: Workaround NULL_TREE offsets causing ICE's.
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        #cd ${dir}gcc && autoconf2.59
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        #rm ${dir}gcc/configure
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+
+--- gcc/gimplify.c	2010-03-03 00:43:19.507100819 +0000
++++ gcc/gimplify.c	2010-03-03 02:16:51.936079130 +0000
+@@ -1859,6 +1859,9 @@
+ 	      /* Divide the offset by its alignment.  */
+ 	      offset = size_binop (EXACT_DIV_EXPR, offset, factor);
+ 
++	      if (offset == NULL_TREE)
++		  continue;
++
+ 	      if (!is_gimple_min_invariant (offset))
+ 		{
+ 	          TREE_OPERAND (t, 2) = offset;
+--- gcc/tree-inline.c	2010-03-02 19:56:24.476100429 +0000
++++ gcc/tree-inline.c	2010-03-02 19:59:34.119086618 +0000
+@@ -3412,7 +3412,8 @@
+ {
+   tree copy, type;
+ 
+-  gcc_assert (TREE_CODE (decl) == PARM_DECL
++  if (cfun->naked)
++      gcc_assert (TREE_CODE (decl) == PARM_DECL
+ 	      || TREE_CODE (decl) == RESULT_DECL);
+ 
+   type = TREE_TYPE (decl);

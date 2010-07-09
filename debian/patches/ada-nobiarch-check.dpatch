@@ -1,0 +1,41 @@
+#! /bin/sh -e
+
+# DP: For biarch builds, disable the gnat testsuite for the non-default
+# architecture (no biarch support in gnat yet).
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+--- gcc/Makefile.in~	2008-10-18 23:01:52.000000000 +0200
++++ gcc/Makefile.in	2008-10-19 18:16:38.000000000 +0200
+@@ -4312,7 +4312,11 @@
+ 	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+ 	    export TCL_LIBRARY ; fi ; \
+ 	GCC_EXEC_PREFIX="$(libdir)/gcc/" ; export GCC_EXEC_PREFIX ; \
+-	$(RUNTEST) --tool $* $(RUNTESTFLAGS))
++	if [ "$*" = gnat ]; then \
++	  runtestflags="`echo '$(RUNTESTFLAGS)' | sed 's/,-m[36][24]//;s/,-mabi=n32//'`"; \
++	  case "$$runtestflags" in *\\{\\}) runtestflags=; esac; \
++	fi; \
++	$(RUNTEST) --tool $* $$runtestflags)
+ 
+ check-consistency: testsuite/site.exp
+ 	-rootme=`${PWD_COMMAND}`; export rootme; \

@@ -1,0 +1,73 @@
+#! /bin/sh -e
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p1 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p1 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+# DP: Install a hook _Unwind_DebugHook, called during unwinding. Intended as
+# DP: a hook for a debugger to intercept exceptions. CFA is the CFA of the
+# DP: target frame.  HANDLER is the PC to which control will be transferred.
+
+2009-05-27  Tom Tromey  <tromey@redhat.com>
+
+	* unwind-dw2.c (_Unwind_DebugHook): New function.
+	(uw_install_context): Call _Unwind_DebugHook.
+
+--- src/gcc/unwind-dw2.c	(revision 147933)
++++ src/gcc/unwind-dw2.c	(revision 147934)
+@@ -1473,18 +1473,31 @@ uw_init_context_1 (struct _Unwind_Contex
+   context->ra = __builtin_extract_return_addr (outer_ra);
+ }
+ 
++static void _Unwind_DebugHook (void *, void *) __attribute__ ((__noinline__));
++
++/* This function is called during unwinding.  It is intended as a hook
++   for a debugger to intercept exceptions.  CFA is the CFA of the
++   target frame.  HANDLER is the PC to which control will be
++   transferred.  */
++static void
++_Unwind_DebugHook (void *cfa __attribute__ ((__unused__)),
++		   void *handler __attribute__ ((__unused__)))
++{
++  asm ("");
++}
+ 
+ /* Install TARGET into CURRENT so that we can return to it.  This is a
+    macro because __builtin_eh_return must be invoked in the context of
+    our caller.  */
+ 
+-#define uw_install_context(CURRENT, TARGET)				 \
+-  do									 \
+-    {									 \
+-      long offset = uw_install_context_1 ((CURRENT), (TARGET));		 \
+-      void *handler = __builtin_frob_return_addr ((TARGET)->ra);	 \
+-      __builtin_eh_return (offset, handler);				 \
+-    }									 \
++#define uw_install_context(CURRENT, TARGET)				\
++  do									\
++    {									\
++      long offset = uw_install_context_1 ((CURRENT), (TARGET));		\
++      void *handler = __builtin_frob_return_addr ((TARGET)->ra);	\
++      _Unwind_DebugHook ((TARGET)->cfa, handler);			\
++      __builtin_eh_return (offset, handler);				\
++    }									\
+   while (0)
+ 
+ static long

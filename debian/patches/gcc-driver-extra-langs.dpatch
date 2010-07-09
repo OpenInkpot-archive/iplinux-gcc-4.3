@@ -25,16 +25,15 @@ esac
 exit 0
 
 
---- gcc/Makefile.in~	2006-07-11 14:03:25.865618000 +0200
-+++ gcc/Makefile.in	2006-07-11 21:15:30.011548776 +0200
-@@ -424,8 +424,8 @@
- xm_include_list=@xm_include_list@
- xm_defines=@xm_defines@
- lang_checks=check-gcc
--lang_opt_files=@lang_opt_files@ $(srcdir)/c.opt $(srcdir)/common.opt
--lang_specs_files=@lang_specs_files@
+--- gcc/Makefile.in~	2008-10-23 16:26:42.000000000 +0200
++++ gcc/Makefile.in	2008-10-23 16:29:40.000000000 +0200
+@@ -447,6 +447,9 @@
+ extra_modes_file=@extra_modes_file@
+ extra_opt_files=@extra_opt_files@
+ host_hook_obj=@out_host_hook_obj@
++# languages built separately
 +lang_opt_files=$(sort @lang_opt_files@ $(foreach lang,$(debian_extra_langs),$(srcdir)/$(lang)/lang.opt)) $(srcdir)/c.opt $(srcdir)/common.opt
 +lang_specs_files=$(sort @lang_specs_files@ $(foreach lang,$(debian_extra_langs),$(srcdir)/$(lang)/lang-specs.h))
- lang_tree_files=@lang_tree_files@
- target_cpu_default=@target_cpu_default@
- GCC_THREAD_FILE=@thread_file@
+ 
+ # ------------------------
+ # Installation directories

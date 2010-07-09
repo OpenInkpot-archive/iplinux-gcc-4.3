@@ -23,9 +23,9 @@ case "$1" in
 esac
 exit 0
 
---- gcc/Makefile.in~	2004-02-06 08:03:12.000000000 +0100
-+++ gcc/Makefile.in	2004-02-14 10:27:19.000000000 +0100
-@@ -3567,7 +3567,9 @@
+--- Makefile.in.orig	2010-03-21 10:30:52.162335871 +0000
++++ Makefile.in	2010-03-21 10:31:07.772335843 +0000
+@@ -50544,7 +50544,9 @@
  	if [ -f .bad_compare ]; then \
  	  echo "Bootstrap comparison failure!"; \
  	  cat .bad_compare; \
@@ -34,5 +34,5 @@ exit 0
 +	  echo "Ignore the comparision failure!"; \
 +	  true; \
  	else \
- 	  case "$@" in \
- 	    *-lean ) rm -rf stage$$stage ;; \
+ 	  echo Comparison successful.; \
+ 	fi ; \

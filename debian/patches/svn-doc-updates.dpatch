@@ -1,12 +1,12 @@
 #! /bin/sh -e
 
-# DP: updates from the 4.3 branch upto 2008xxxx (documentation).
+# DP: updates from the 4.3 branch upto 2009xxxx (documentation).
 
 last_updated()
 {
 	cat > ${dir}LAST_UPDATED <<EOF
-Sun Jul 20 18:29:36 CEST 2008
-Sun Jul 20 16:29:36 UTC 2008 (revision 138010)
+Fri Jun 12 18:06:57 CEST 2009
+Fri Jun 12 16:06:57 UTC 2009 (revision 148433)
 EOF
 }
 
@@ -21,9 +21,12 @@ fi
 case "$1" in
     -patch)
         patch $pdir -f --no-backup-if-mismatch -p0 < $0
+	last_updated
+        #cd ${dir}gcc && autoconf2.59
         ;;
     -unpatch)
         patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        #rm ${dir}gcc/configure
         ;;
     *)
         echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
@@ -31,6 +34,6 @@ case "$1" in
 esac
 exit 0
 
-# svn diff svn://gcc.gnu.org/svn/gcc/tags/gcc_4_3_2_release svn://gcc.gnu.org/svn/gcc/branches/gcc-4_3-branch \
-#     | awk '/^Index:.*\.class/ {skip=1; next} /^Index:/ { skip=0 } skip==0'
+# svn diff svn://gcc.gnu.org/svn/gcc/tags/gcc_4_3_4_release svn://gcc.gnu.org/svn/gcc/branches/gcc-4_3-branch \
+#     | awk '/^Index:.*\.texi/ {skip=0; print; next} /^Index:/ {skip=1; next} skip==0'
 

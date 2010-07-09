@@ -1,0 +1,72 @@
+#! /bin/sh -e
+
+# gdc-4.3-execvpe.dpatch by Iain Buclaw <ibuclaw@ubuntu.com>
+# DP: Allow GDC to build if GNU C has execvpe() implemented.
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+--- gcc.orig/d/phobos/std/process.d	2010-02-05 20:55:08.000000000 +0000
++++ gcc/d/phobos/std/process.d	2010-02-15 10:59:30.000000000 +0000
+@@ -237,7 +237,7 @@
+         return iRet;
+     }
+ }
+-else version(Windows)
++else // Recent versions of GNU C have execvpe() implemented.
+ {
+     auto argv_ = cast(char**)alloca((char*).sizeof * (1 + argv.length));
+     auto envp_ = cast(char**)alloca((char*).sizeof * (1 + envp.length));
+@@ -247,12 +247,6 @@
+ 
+     return std.c.process.execvpe(toStringz(pathname), argv_, envp_);
+ }
+-else
+-{
+-  // Evidently if we don't need it we don't _need_ it.
+-  assert(false);
+-  // static assert(0);
+-} // version
+ }
+ 
+ /* ////////////////////////////////////////////////////////////////////////// */
+--- gcc.orig/d/phobos2/std/process.d	2010-02-05 20:55:08.000000000 +0000
++++ gcc/d/phobos2/std/process.d	2010-02-15 10:58:37.000000000 +0000
+@@ -273,7 +273,7 @@
+         return iRet;
+     }
+ }
+-else version(Windows)
++else // Recent versions of GNU C have execvpe() implemented.
+ {
+     auto argv_ = cast(const(char)**)alloca((char*).sizeof * (1 + argv.length));
+     auto envp_ = cast(const(char)**)alloca((char*).sizeof * (1 + envp.length));
+@@ -283,10 +283,6 @@
+ 
+     return std.c.process.execvpe(toStringz(pathname), argv_, envp_);
+ }
+-else
+-{
+-    static assert(0);
+-} // version
+ }
+ 
+ version(Unix)

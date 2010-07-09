@@ -13,10 +13,10 @@ elif [ $# -ne 1 ]; then
 fi
 case "$1" in
     -patch)
-        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        patch $pdir -f --no-backup-if-mismatch -p1 < $0
         ;;
     -unpatch)
-        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        patch $pdir -f --no-backup-if-mismatch -R -p1 < $0
         ;;
     *)
         echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
@@ -35,9 +35,20 @@ exit 0
 	diagnostic_action_after_output, error_recursion): Exit with
 	ICE_EXIT_CODE instead of FATAL_EXIT_CODE.
 
---- gcc/diagnostic.c.orig	2007-09-30 10:48:13.000000000 +0000
-+++ gcc/diagnostic.c	2007-09-30 10:49:57.000000000 +0000
-@@ -244,7 +244,7 @@
+--- src/gcc/Makefile.in
++++ src/gcc/Makefile.in
+@@ -187,6 +187,8 @@ dominance.o-warn = -Wno-error
+ graphite.o-warn = -Wno-error
+ # mips-tfile.c contains -Wcast-qual warnings.
+ mips-tfile.o-warn = -Wno-error
++# gcc-ice-hack
++gcc.o-warn = -Wno-error
+ 
+ # All warnings have to be shut off in stage1 if the compiler used then
+ # isn't gcc; configure determines that.  WARN_CFLAGS will be either
+--- src/gcc/diagnostic.c
++++ src/gcc/diagnostic.c
+@@ -195,7 +195,7 @@ diagnostic_action_after_output (diagnostic_context *context,
        fnotice (stderr, "Please submit a full bug report,\n"
  	       "with preprocessed source if appropriate.\n"
  	       "See %s for instructions.\n", bug_report_url);
@@ -46,9 +57,9 @@ exit 0
  
      case DK_FATAL:
        if (context->abort_on_error)
---- gcc/gcc.c.orig	2007-09-30 10:48:13.000000000 +0000
-+++ gcc/gcc.c	2007-09-30 10:48:39.000000000 +0000
-@@ -357,6 +357,9 @@
+--- src/gcc/gcc.c
++++ src/gcc/gcc.c
+@@ -368,6 +368,9 @@ static void init_gcc_specs (struct obstack *, const char *, const char *,
  #if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
  static const char *convert_filename (const char *, int, int);
  #endif
@@ -58,7 +69,7 @@ exit 0
  
  static const char *getenv_spec_function (int, const char **);
  static const char *if_exists_spec_function (int, const char **);
-@@ -2999,7 +3002,7 @@
+@@ -3018,7 +3021,7 @@ execute (void)
  	    }
  	}
  
@@ -67,7 +78,7 @@ exit 0
  	free (CONST_CAST (char *, string));
      }
  
-@@ -3056,6 +3059,16 @@
+@@ -3075,6 +3078,16 @@ See %s for instructions.",
  	else if (WIFEXITED (status)
  		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
  	  {
@@ -84,7 +95,7 @@ exit 0
  	    if (WEXITSTATUS (status) > greatest_status)
  	      greatest_status = WEXITSTATUS (status);
  	    ret_code = -1;
-@@ -3076,6 +3089,9 @@
+@@ -3095,6 +3108,9 @@ See %s for instructions.",
  	  }
        }
  
@@ -94,7 +105,7 @@ exit 0
      return ret_code;
    }
  }
-@@ -6016,6 +6032,224 @@
+@@ -6093,6 +6109,224 @@ give_switch (int switchnum, int omit_first_word)
    switches[switchnum].validated = 1;
  }
  
@@ -319,14 +330,3 @@ exit 0
  /* Search for a file named NAME trying various prefixes including the
     user's -B prefix and some standard ones.
     Return the absolute file name found.  If nothing is found, return NAME.  */
---- gcc/Makefile.in	2008-07-02 10:01:42.000000000 +0000
-+++ gcc/Makefile.in	2008-07-02 10:02:23.000000000 +0000
-@@ -191,6 +191,8 @@
- bitmap.o-warn = -Wno-error
- # dominance.c contains a -Wc++compat warning.
- dominance.o-warn = -Wno-error
-+# gcc-ice-hack
-+build/gcc.o-warn = -Wno-error
- 
- # All warnings have to be shut off in stage1 if the compiler used then
- # isn't gcc; configure determines that.  WARN_CFLAGS will be either

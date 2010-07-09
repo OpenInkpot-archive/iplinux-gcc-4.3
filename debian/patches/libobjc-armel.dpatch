@@ -41,24 +41,6 @@ ChangeLog (libobjc-arm-eabi-support)
     ARM EABI unwinding support.
     (objc_exception_throw): Use memcpy to initialise exception class.
 
-ChangeLog (arm-eh-uses)
-
-    gcc/
-    * config/arm/arm.h (EH_USES): Define.
-
---- .pc/arm-eh-uses/gcc/config/arm/arm.h	2008-04-23 14:57:33.000000000 -0700
-+++ gcc/config/arm/arm.h	2008-04-23 14:58:18.000000000 -0700
-@@ -879,6 +879,10 @@ extern int arm_structure_size_boundary;
- #define ARM_EH_STACKADJ_REGNUM	2
- #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (SImode, ARM_EH_STACKADJ_REGNUM)
- 
-+/* r0 may be used by catch handlers.  Make sure it's marked live on entry
-+   to those.  */
-+#define EH_USES(N) ((N) == 0)
-+
- /* The native (Norcroft) Pascal compiler for the ARM passes the static chain
-    as an invisible last argument (possible since varargs don't exist in
-    Pascal), so the following is not true.  */
 --- .pc/libobjc-arm-eabi-support/configure.ac	2008-04-23 14:26:40.000000000 -0700
 +++ configure.ac	2008-04-23 14:30:17.000000000 -0700
 @@ -538,7 +538,6 @@ case "${target}" in

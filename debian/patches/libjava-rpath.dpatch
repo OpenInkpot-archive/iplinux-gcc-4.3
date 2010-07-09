@@ -13,7 +13,7 @@ fi
 case "$1" in
     -patch)
         patch $pdir -f --no-backup-if-mismatch -p0 < $0
-	#cd ${dir}libjava && autoconf
+	#cd ${dir}libjava && autoconf2.59
         ;;
     -unpatch)
         patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
@@ -25,25 +25,25 @@ case "$1" in
 esac
 exit 0
 
---- libjava/Makefile.am~	2007-03-04 18:50:01.000000000 +0100
-+++ libjava/Makefile.am	2007-03-04 19:19:32.000000000 +0100
-@@ -683,7 +683,7 @@
- ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
+--- libjava/Makefile.am~	2009-06-25 15:41:57.000000000 +0200
++++ libjava/Makefile.am	2009-06-25 15:45:52.000000000 +0200
+@@ -714,7 +714,7 @@
+ ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR) -fbootclasspath=$(BOOTCLASSPATH)
  endif !ENABLE_SHARED
  
--ecjx_LDADD = -L$(here)/.libs libgcj.la
-+ecjx_LDADD = -L$(here)/.libs libgcj.la -rpath $(dbexecdir)
+-ecjx_LDADD = -L$(here)/.libs $(extra_ldflags)
++ecjx_LDADD = -L$(here)/.libs $(extra_ldflags) -rpath $(dbexecdir)
  ecjx_DEPENDENCIES = libgcj.la libgcj.spec
- 
- else !NATIVE
---- libjava/Makefile.in~	2007-03-04 18:50:01.000000000 +0100
-+++ libjava/Makefile.in	2007-03-04 19:21:22.000000000 +0100
-@@ -7787,7 +7787,7 @@
+ if USE_LIBGCJ_BC
+ ecjx_DEPENDENCIES += libgcj_bc.la
+--- libjava/Makefile.in~	2009-06-25 15:41:57.000000000 +0200
++++ libjava/Makefile.in	2009-06-25 15:46:56.000000000 +0200
+@@ -7999,7 +7999,7 @@
  @ENABLE_SHARED_TRUE@@NATIVE_TRUE@ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) -Djava.class.path=$(ECJ_JAR)
  @NATIVE_FALSE@ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
  @NATIVE_FALSE@ecjx_LDADD = 
--@NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs libgcj.la
-+@NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs libgcj.la -rpath $(dbexecdir)
+-@NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs $(extra_ldflags) \
++@NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs $(extra_ldflags) -rpath $(dbexecdir) \
+ @NATIVE_TRUE@	$(am__append_17)
  @NATIVE_FALSE@ecjx_DEPENDENCIES = 
- @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec
- gappletviewer_SOURCES = 
+ @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec \

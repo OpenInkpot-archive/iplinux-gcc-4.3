@@ -1,0 +1,73 @@
+#! /bin/sh -e
+
+# gdc-fix-build-kfreebsd.dpatch by Arthur Loiret <arthur.loiret@gmail.com>
+# DP: Fix gdc build on k*bsd*-gnu, update configure and target-ver-syms.sh
+# DP: to build k*bsd*-gnu architectures as a freebsd
+# DP: Updated for gdc-4.3 by Iain Buclaw <ibuclaw@ubuntu.com>
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        #cd ${dir}gcc && autoconf
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        #rm ${dir}gcc/configure
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+
+--- gcc/d/phobos/configure	2010-03-20 13:01:54.000000000 +0000
++++ gcc/d/phobos/configure	2010-04-13 23:37:04.000000000 +0100
+@@ -5428,6 +5428,7 @@
+     freebsd*|k*bsd*-gnu)
+ 	     d_have_loader=1
+ 	     D_EXTRA_OBJS="$D_EXTRA_OBJS gcc/cbridge_stdio.o"
++	     D_EXTRA_OBJS="$D_EXTRA_OBJS std/c/freebsd/freebsd.o"
+ 	     DCFG_CBRIDGE_STDIO=GNU_CBridge_Stdio
+ 	     ;;
+     linux*)  #D_EXTRA_OBJS="$D_EXTRA_OBJS std/c/linux/linux.o"
+@@ -5816,7 +5817,7 @@
+ 	    d_gc_stack=GC_Use_Stack_Fixed
+ 	    d_gc_data="$d_gc_data GC_Use_Data_Dyld"
+ 	    ;;
+-  *freebsd*)D_GC_MODULES="$D_GC_MODULES internal/gc/gc_freebsd.o"
++  freebsd*|k*bsd*-gnu)D_GC_MODULES="$D_GC_MODULES internal/gc/gc_freebsd.o"
+ 	    d_gc_stack=GC_Use_Stack_FreeBSD
+ 	    d_gc_data="$d_gc_data GC_Use_Data_Fixed"
+ 	    	    ;;
+--- gcc/d/phobos2/configure	2010-03-20 13:01:54.000000000 +0000
++++ gcc/d/phobos2/configure	2010-04-13 23:42:12.000000000 +0100
+@@ -9110,7 +9110,7 @@
+ 	    d_gc_stack=GC_Use_Stack_Fixed
+ 	    d_gc_data="$d_gc_data GC_Use_Data_Dyld"
+ 	    ;;
+-  *freebsd*)D_GC_MODULES="$D_GC_MODULES internal/gc/gc_freebsd.o"
++  freebsd*|k*bsd*-gnu)D_GC_MODULES="$D_GC_MODULES internal/gc/gc_freebsd.o"
+ 	    d_gc_stack=GC_Use_Stack_FreeBSD
+ 	    d_gc_data="$d_gc_data GC_Use_Data_Fixed"
+ 	    	    ;;
+--- gcc/d/target-ver-syms.sh	2010-03-20 13:01:54.000000000 +0000
++++ gcc/d/target-ver-syms.sh	2010-04-13 23:37:57.000000000 +0100
+@@ -29,7 +29,8 @@
+ cygwin*) d_os_versym=cygwin ; d_unix=1 ;;
+ darwin*) d_os_versym=darwin ; d_unix=1 ;;
+ elf*) ;;
+-*freebsd*) d_os_versym=freebsd ; d_unix=1 ;;
++freebsd*) d_os_versym=freebsd ; d_unix=1 ;;
++k*bsd*-gnu) d_os_versym=freebsd ; d_unix=1;;
+ linux*) d_os_versym=linux ; d_unix=1 ;; 
+ mingw32*) d_os_versym=Win32; d_windows=1 ;;
+ pe*)    case "$target" in

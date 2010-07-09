@@ -29,7 +29,7 @@ Index: gcc/testsuite/ada/acats/run_acats
 ===================================================================
 --- gcc/testsuite/ada/acats/run_acats.orig
 +++ gcc/testsuite/ada/acats/run_acats
-@@ -5,51 +5,27 @@
+@@ -5,51 +5,28 @@
     exit 1
  fi
  
@@ -40,7 +40,7 @@ Index: gcc/testsuite/ada/acats/run_acats
 -ROOT=`${PWDCMD-pwd}`
 -BASE=`cd $ROOT/../../..; ${PWDCMD-pwd}`
 +echo '#!/bin/sh' > host_gnatchop
-+echo exec /usr/bin/gnatchop '"$@"' >> host_gnatchop
++echo exec /usr/bin/gnatchop '$*' >> host_gnatchop
  
 -PATH=$BASE:$ROOT:$PATH
 -ADA_INCLUDE_PATH=$BASE/ada/rts
@@ -53,7 +53,8 @@ Index: gcc/testsuite/ada/acats/run_acats
 -   exit 1
 -fi
 +echo '#!/bin/sh' > host_gnatmake
-+echo exec /usr/bin/gnatmake '"$@"' >> host_gnatmake
++echo echo '$PATH' '$*' >> host_gnatmake
++echo exec /usr/bin/gnatmake '$*' >> host_gnatmake
  
 -if [ ! -f $BASE/gnatchop ]; then
 -   echo gnattools missing, exiting.
@@ -68,8 +69,8 @@ Index: gcc/testsuite/ada/acats/run_acats
 +# Set up environment to use the Ada compiler from the object tree
  
 +ROOT=`${PWDCMD-pwd}`
-+PATH=$ROOT:$PATH
 +BASE=`cd $ROOT/../../..; ${PWDCMD-pwd}`
++PATH=$BASE:$ROOT:$PATH
 +GNATTOOLS=`cd $BASE/../gnattools; ${PWDCMD-pwd}`
 +LIBGNATVSN=`cd $BASE/../libgnatvsn; ${PWDCMD-pwd}`
 +LIBGNATPRJ=`cd $BASE/../libgnatprj; ${PWDCMD-pwd}`
@@ -99,17 +100,18 @@ Index: gcc/testsuite/ada/acats/run_all.sh
 ===================================================================
 --- gcc/testsuite/ada/acats/run_all.sh.orig
 +++ gcc/testsuite/ada/acats/run_all.sh
-@@ -12,6 +12,9 @@
+@@ -12,6 +12,10 @@
  gccflags="-O2"
  gnatflags="-gnatws"
  
-+LD_LIBRARY_PATH=$BASE/ada/rts-shared-zcx:$LIBGNATVSN:$LIBGNATPRJ
++RTS=`cd $GNATTOOLS/../gcc/ada/rts-shared-zcx; ${PWDCMD-pwd}`
++LD_LIBRARY_PATH=$RTS:$LIBGNATVSN:$LIBGNATPRJ
 +export LD_LIBRARY_PATH
 +
  target_run () {
  $*
  }
-@@ -48,15 +51,21 @@
+@@ -48,15 +52,23 @@
  fi
  
  target_gnatchop () {
@@ -121,12 +123,14 @@ Index: gcc/testsuite/ada/acats/run_all.sh
  target_gnatmake () {
 -  echo gnatmake --GCC=\"$GCC\" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC=\"$GCC\"
 -  gnatmake --GCC="$GCC" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC="$GCC"
-+  display $GNATTOOLS/gnatmake \
-+      --GCC="$GCC" --GNATBIND="$GNATTOOLS/gnatbind" --GNATLINK="$GNATTOOLS/gnatlink" \
-+      $gnatflags $gccflags $* -bargs -static -largs $EXTERNAL_OBJECTS --GCC=\"$GCC\"
-+  $GNATTOOLS/gnatmake \
-+      --GCC="$GCC" --GNATBIND="$GNATTOOLS/gnatbind" --GNATLINK="$GNATTOOLS/gnatlink" \
-+      $gnatflags $gccflags $* -bargs -static -largs $EXTERNAL_OBJECTS --GCC="$GCC"
++  display $GNATTOOLS/gnatmake -I- -I$RTS -I. \
++      --GCC=\"$GCC\" --GNATBIND="$GNATTOOLS/gnatbind" \
++      --GNATLINK="$GNATTOOLS/gnatlink" $gnatflags $gccflags $* \
++      -bargs -static -largs $EXTERNAL_OBJECTS --GCC=\"$GCC -I- -I$RTS -I.\"
++  $GNATTOOLS/gnatmake -I- -I$RTS -I. \
++      --GCC="$GCC" --GNATBIND="$GNATTOOLS/gnatbind" \
++      --GNATLINK="$GNATTOOLS/gnatlink" $gnatflags $gccflags $* \
++      -bargs -static -largs $EXTERNAL_OBJECTS --GCC="$GCC -I- -I$RTS -I."
  }
  
  target_gcc () {
@@ -134,14 +138,14 @@ Index: gcc/testsuite/ada/acats/run_all.sh
    $GCC $gccflags $*
  }
  
-@@ -84,8 +93,8 @@
+@@ -84,8 +96,8 @@
  display `$GCC -v 2>&1`
  display host=`gcc -dumpmachine`
  display target=$target
 -display `type gnatmake`
 -gnatls -v >> $dir/acats.log
 +display `type $GNATTOOLS/gnatmake`
-+$GNATTOOLS/gnatls -v >> $dir/acats.log
++$GNATTOOLS/gnatls -I- -I$RTS -v >> $dir/acats.log
  display ""
  
  display "		=== acats support ==="

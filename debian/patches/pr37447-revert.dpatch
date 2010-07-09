@@ -1,0 +1,359 @@
+#! /bin/sh -e
+
+# DP: Revert fix for PR middle-end/37447 (r141077).
+
+dir=
+if [ $# -eq 3 -a "$2" = '-d' ]; then
+    pdir="-d $3"
+    dir="$3/"
+elif [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch)
+        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        ;;
+    -unpatch)
+        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        ;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1
+esac
+exit 0
+
+gcc/
+
+2008-10-12  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/37447
+	* Makefile.in (reload1.o): Depend on EMIT_RTL_H.
+	* alias.c (value_addr_p, stack_addr_p): Remove.
+	(nonoverlapping_memrefs_p): Remove IRA special case.
+	* emit-rtl.c (get_spill_slot_decl, set_mem_attrs_for_spill): New.
+	* emit-rtl.h (set_mem_attrs_for_spill): Declare.
+	* reload1.c (alter_reg): Use it.
+
+Index: gcc/alias.c
+===================================================================
+--- gcc/alias.c	(revision 141076)
++++ gcc/alias.c	(revision 141077)
+@@ -1983,34 +1983,6 @@
+   return GEN_INT (ioffset);
+ }
+ 
+-/* The function returns nonzero if X is an address containg VALUE.  */
+-static int
+-value_addr_p (rtx x)
+-{
+-  if (GET_CODE (x) == VALUE)
+-    return 1;
+-  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == VALUE)
+-    return 1;
+-  return 0;
+-}
+-
+-/* The function returns nonzero if X is a stack address.  */
+-static int
+-stack_addr_p (rtx x)
+-{
+-  if (x == hard_frame_pointer_rtx || x == frame_pointer_rtx
+-      || x == arg_pointer_rtx || x == stack_pointer_rtx)
+-    return 1;
+-  if (GET_CODE (x) == PLUS
+-      && (XEXP (x, 0) == hard_frame_pointer_rtx
+-	  || XEXP (x, 0) == frame_pointer_rtx
+-	  || XEXP (x, 0) == arg_pointer_rtx
+-	  || XEXP (x, 0) == stack_pointer_rtx)
+-      && CONSTANT_P (XEXP (x, 1)))
+-    return 1;
+-  return 0;
+-}
+-
+ /* Return nonzero if we can determine the exprs corresponding to memrefs
+    X and Y and they do not overlap.  */
+ 
+@@ -2020,27 +1992,9 @@
+   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
+   rtx rtlx, rtly;
+   rtx basex, basey;
+-  rtx x_addr, y_addr;
+   rtx moffsetx, moffsety;
+   HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey, tem;
+ 
+-  if (flag_ira && optimize && reload_completed)
+-    {
+-      /* We need this code for IRA because of stack slot sharing.  RTL
+-	 in decl can be different than RTL used in insns.  It is a
+-	 safe code although it can be conservative sometime.  */
+-      x_addr = canon_rtx (get_addr (XEXP (x, 0)));
+-      y_addr = canon_rtx (get_addr (XEXP (y, 0)));
+-      
+-      if (value_addr_p (x_addr) || value_addr_p (y_addr))
+-	return 0;
+-       
+-      if (stack_addr_p (x_addr) && stack_addr_p (y_addr)
+-	  && memrefs_conflict_p (SIZE_FOR_MODE (y), y_addr,
+-				 SIZE_FOR_MODE (x), x_addr, 0))
+-	return 0;
+-    }
+-
+   /* Unless both have exprs, we can't tell anything.  */
+   if (exprx == 0 || expry == 0)
+     return 0;
+Index: gcc/emit-rtl.c
+===================================================================
+--- gcc/emit-rtl.c	(revision 141076)
++++ gcc/emit-rtl.c	(revision 141077)
+@@ -2138,6 +2138,65 @@
+   return new_rtx;
+ }
+ 
++/* A fake decl that is used as the MEM_EXPR of spill slots.  */
++static GTY(()) tree spill_slot_decl;
++
++static tree
++get_spill_slot_decl (void)
++{
++  tree d = spill_slot_decl;
++  rtx rd;
++
++  if (d)
++    return d;
++
++  d = build_decl (VAR_DECL, get_identifier ("%sfp"), void_type_node);
++  DECL_ARTIFICIAL (d) = 1;
++  DECL_IGNORED_P (d) = 1;
++  TREE_USED (d) = 1;
++  TREE_THIS_NOTRAP (d) = 1;
++  spill_slot_decl = d;
++
++  rd = gen_rtx_MEM (BLKmode, frame_pointer_rtx);
++  MEM_NOTRAP_P (rd) = 1;
++  MEM_ATTRS (rd) = get_mem_attrs (new_alias_set (), d, const0_rtx,
++				  NULL_RTX, 0, BLKmode);
++  SET_DECL_RTL (d, rd);
++
++  return d;
++}
++
++/* Given MEM, a result from assign_stack_local, fill in the memory
++   attributes as appropriate for a register allocator spill slot.
++   These slots are not aliasable by other memory.  We arrange for
++   them all to use a single MEM_EXPR, so that the aliasing code can
++   work properly in the case of shared spill slots.  */
++
++void
++set_mem_attrs_for_spill (rtx mem)
++{
++  alias_set_type alias;
++  rtx addr, offset;
++  tree expr;
++
++  expr = get_spill_slot_decl ();
++  alias = MEM_ALIAS_SET (DECL_RTL (expr));
++
++  /* We expect the incoming memory to be of the form:
++	(mem:MODE (plus (reg sfp) (const_int offset)))
++     with perhaps the plus missing for offset = 0.  */
++  addr = XEXP (mem, 0);
++  offset = const0_rtx;
++  if (GET_CODE (addr) == PLUS
++      && GET_CODE (XEXP (addr, 1)) == CONST_INT)
++    offset = XEXP (addr, 1);
++
++  MEM_ATTRS (mem) = get_mem_attrs (alias, expr, offset,
++				   MEM_SIZE (mem), MEM_ALIGN (mem),
++				   GET_MODE (mem));
++  MEM_NOTRAP_P (mem) = 1;
++}
++
+ /* Return a newly created CODE_LABEL rtx with a unique label number.  */
+ 
+ rtx
+Index: gcc/emit-rtl.h
+===================================================================
+--- gcc/emit-rtl.h	(revision 141076)
++++ gcc/emit-rtl.h	(revision 141077)
+@@ -35,6 +35,9 @@
+ /* Set the size for MEM to SIZE.  */
+ extern void set_mem_size (rtx, rtx);
+ 
++/* Set the attributes for MEM appropriate for a spill slot.  */
++extern void set_mem_attrs_for_spill (rtx);
++
+ /* Return a memory reference like MEMREF, but with its address changed to
+    ADDR.  The caller is asserting that the actual piece of memory pointed
+    to is the same, just the form of the address is being changed, such as
+Index: gcc/Makefile.in
+===================================================================
+--- gcc/Makefile.in	(revision 141076)
++++ gcc/Makefile.in	(revision 141077)
+@@ -2868,7 +2868,7 @@
+    $(EXPR_H) $(OPTABS_H) reload.h $(REGS_H) hard-reg-set.h insn-config.h \
+    $(BASIC_BLOCK_H) $(RECOG_H) output.h $(FUNCTION_H) $(TOPLEV_H) $(TM_P_H) \
+    addresses.h except.h $(TREE_H) $(REAL_H) $(FLAGS_H) $(MACHMODE_H) \
+-   $(OBSTACK_H) $(DF_H) $(TARGET_H) dse.h ira.h
++   $(OBSTACK_H) $(DF_H) $(TARGET_H) $(EMIT_RTL_H) ira.h
+ rtlhooks.o :  rtlhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+    rtlhooks-def.h $(EXPR_H) $(RECOG_H)
+ postreload.o : postreload.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+Index: gcc/reload1.c
+===================================================================
+--- gcc/reload1.c	(revision 141076)
++++ gcc/reload1.c	(revision 141077)
+@@ -47,7 +47,7 @@
+ #include "ira.h"
+ #include "df.h"
+ #include "target.h"
+-#include "dse.h"
++#include "emit-rtl.h"
+ 
+ /* This file contains the reload pass of the compiler, which is
+    run after register allocation has been done.  It checks that
+@@ -2150,22 +2150,25 @@
+       && (reg_equiv_invariant[i] == 0 || reg_equiv_init[i] == 0)
+       && reg_equiv_memory_loc[i] == 0)
+     {
+-      rtx x;
++      rtx x = NULL_RTX;
+       enum machine_mode mode = GET_MODE (regno_reg_rtx[i]);
+       unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
+       unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
+       unsigned int total_size = MAX (inherent_size, reg_max_ref_width[i]);
+       unsigned int min_align = reg_max_ref_width[i] * BITS_PER_UNIT;
+       int adjust = 0;
+-      bool shared_p = false;
+ 
+       if (flag_ira && optimize)
+-	/* Mark the spill for IRA.  */
+-	SET_REGNO_REG_SET (&spilled_pseudos, i);
+-      x = (dont_share_p || ! flag_ira || ! optimize
+-	   ? NULL_RTX : ira_reuse_stack_slot (i, inherent_size, total_size));
++	{
++	  /* Mark the spill for IRA.  */
++	  SET_REGNO_REG_SET (&spilled_pseudos, i);
++	  if (!dont_share_p)
++	    x = ira_reuse_stack_slot (i, inherent_size, total_size);
++	}
++
+       if (x)
+-	shared_p = true;
++	;
++
+       /* Each pseudo reg has an inherent size which comes from its own mode,
+ 	 and a total size which provides room for paradoxical subregs
+ 	 which refer to the pseudo reg in wider modes.
+@@ -2174,10 +2177,9 @@
+ 	 enough inherent space and enough total space.
+ 	 Otherwise, we allocate a new slot, making sure that it has no less
+ 	 inherent space, and no less total space, then the previous slot.  */
+-      else if (from_reg == -1 || (! dont_share_p && flag_ira && optimize))
++      else if (from_reg == -1 || (!dont_share_p && flag_ira && optimize))
+ 	{
+ 	  rtx stack_slot;
+-	  alias_set_type alias_set = new_alias_set ();
+ 
+ 	  /* No known place to spill from => no slot to reuse.  */
+ 	  x = assign_stack_local (mode, total_size,
+@@ -2186,12 +2188,11 @@
+ 
+ 	  stack_slot = x;
+ 
++	  /* Cancel the big-endian correction done in assign_stack_local.
++	     Get the address of the beginning of the slot.  This is so we
++	     can do a big-endian correction unconditionally below.  */
+ 	  if (BYTES_BIG_ENDIAN)
+ 	    {
+-	      /* Cancel the  big-endian correction done in assign_stack_local.
+-		 Get the address of the beginning of the slot.
+-		 This is so we can do a big-endian correction unconditionally
+-		 below.  */
+ 	      adjust = inherent_size - total_size;
+ 	      if (adjust)
+ 		stack_slot
+@@ -2201,10 +2202,6 @@
+ 				       adjust);
+ 	    }
+ 
+-	  /* Nothing can alias this slot except this pseudo.  */
+-	  set_mem_alias_set (x, alias_set);
+-	  dse_record_singleton_alias_set (alias_set, mode);
+-
+ 	  if (! dont_share_p && flag_ira && optimize)
+ 	    /* Inform IRA about allocation a new stack slot.  */
+ 	    ira_mark_new_stack_slot (stack_slot, i, total_size);
+@@ -2217,6 +2214,7 @@
+ 		   >= inherent_size)
+ 	       && MEM_ALIGN (spill_stack_slot[from_reg]) >= min_align)
+ 	x = spill_stack_slot[from_reg];
++
+       /* Allocate a bigger slot.  */
+       else
+ 	{
+@@ -2241,27 +2239,11 @@
+ 				  || total_size > inherent_size ? -1 : 0);
+ 	  stack_slot = x;
+ 
+-	  /* All pseudos mapped to this slot can alias each other.  */
+-	  if (spill_stack_slot[from_reg])
+-	    {
+-	      alias_set_type alias_set 
+-		= MEM_ALIAS_SET (spill_stack_slot[from_reg]);
+-	      set_mem_alias_set (x, alias_set);
+-	      dse_invalidate_singleton_alias_set (alias_set);
+-	    }
+-	  else
+-	    {
+-	      alias_set_type alias_set = new_alias_set ();
+-	      set_mem_alias_set (x, alias_set);
+-	      dse_record_singleton_alias_set (alias_set, mode);
+-	    }
+-
++	  /* Cancel the  big-endian correction done in assign_stack_local.
++	     Get the address of the beginning of the slot.  This is so we
++	     can do a big-endian correction unconditionally below.  */
+ 	  if (BYTES_BIG_ENDIAN)
+ 	    {
+-	      /* Cancel the  big-endian correction done in assign_stack_local.
+-		 Get the address of the beginning of the slot.
+-		 This is so we can do a big-endian correction unconditionally
+-		 below.  */
+ 	      adjust = GET_MODE_SIZE (mode) - total_size;
+ 	      if (adjust)
+ 		stack_slot
+@@ -2284,31 +2266,9 @@
+ 	 wrong mode, make a new stack slot.  */
+       x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
+ 
+-      /* If we have a decl for the original register, set it for the
+-	 memory.  If this is a shared MEM, make a copy.  */
+-      if (shared_p)
+-	{
+-	  x = copy_rtx (x);
+-	  set_mem_attrs_from_reg (x, regno_reg_rtx[i]);
+-	}
+-      else if (REG_EXPR (regno_reg_rtx[i])
+-	       && DECL_P (REG_EXPR (regno_reg_rtx[i])))
+-	{
+-	  rtx decl = DECL_RTL_IF_SET (REG_EXPR (regno_reg_rtx[i]));
++      /* Set all of the memory attributes as appropriate for a spill.  */
++      set_mem_attrs_for_spill (x);
+ 
+-	  /* We can do this only for the DECLs home pseudo, not for
+-	     any copies of it, since otherwise when the stack slot
+-	     is reused, nonoverlapping_memrefs_p might think they
+-	     cannot overlap.  */
+-	  if (decl && REG_P (decl) && REGNO (decl) == (unsigned) i)
+-	    {
+-	      if (from_reg != -1 && spill_stack_slot[from_reg] == x)
+-		x = copy_rtx (x);
+-
+-	      set_mem_attrs_from_reg (x, regno_reg_rtx[i]);
+-	    }
+-	}
+-
+       /* Save the stack slot for later.  */
+       reg_equiv_memory_loc[i] = x;
+     }

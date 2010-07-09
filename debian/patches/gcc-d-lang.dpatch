@@ -244,3 +244,35 @@ diff -urN gcc.orig/d/lang-specs.h gcc/d/lang-specs.h
 +      %{M} %{MM} %{!fsyntax-only:%(invoke_as)}}", D_D_SPEC_REST },
 +#endif
 +
+*** gcc-orig/gcc.c	2008-03-02 17:55:19.000000000 -0500
+--- gcc/gcc.c	2008-07-24 11:25:08.000000000 -0400
+***************
+*** 472,477 ****
+--- 478,484 ----
+  	assembler has done its job.
+   %D	Dump out a -L option for each directory in startfile_prefixes.
+  	If multilib_dir is set, extra entries are generated with it affixed.
++  %N     Output the currently selected multilib directory name.
+   %l     process LINK_SPEC as a spec.
+   %L     process LIB_SPEC as a spec.
+   %G     process LIBGCC_SPEC as a spec.
+***************
+*** 5240,5245 ****
+--- 5268,5284 ----
+  	      return value;
+  	    break;
+  
++ 	  case 'N':
++ 	    if (multilib_dir)
++ 	      {
++ 		arg_going = 1;
++ 		obstack_grow (&obstack, "-fmultilib-dir=",
++ 			      strlen ("-fmultilib-dir="));
++ 	        obstack_grow (&obstack, multilib_dir,
++ 			      strlen (multilib_dir));
++ 	      }
++ 	    break;
++ 
+  	    /* Here we define characters other than letters and digits.  */
+  
+  	  case '{':

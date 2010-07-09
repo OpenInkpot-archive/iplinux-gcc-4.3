@@ -42,7 +42,7 @@ Index: gcc/doc/invoke.texi
  Pass @var{option} as an option to the linker.  If @var{option} contains
  commas, it is split into multiple options at the commas.
  
-+NOTE: In Ubuntu 8.10 and later versions, for LDFLAGS, the
++NOTE: In Ubuntu 8.10 and later versions, for LDFLAGS, the option
 +@option{-Wl,-z,relro} is used.  To disable, use @option{-Wl,-z,norelro}.
 +
  @item -u @var{symbol}

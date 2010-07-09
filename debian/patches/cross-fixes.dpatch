@@ -13,11 +13,11 @@ fi
 case "$1" in
     -patch)
         patch $pdir -f --no-backup-if-mismatch -p1 < $0
-        cd ${dir}gcc && autoconf
+        cd ${dir}gcc && autoconf2.59
         ;;
     -unpatch)
         patch $pdir -f --no-backup-if-mismatch -R -p1 < $0
-        cd ${dir}gcc && autoconf
+        cd ${dir}gcc && autoconf2.59
         ;;
     *)
         echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
