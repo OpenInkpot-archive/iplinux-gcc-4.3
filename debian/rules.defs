@@ -244,7 +244,7 @@ export debian_extra_langs
 # Locales
 c_locale := gnu
 uclibc_locale_systems := ip-linux-uclibceabi
-ifneq ($(filter $(DEB_TARGET_GNU_SYSTEM),$(locale_no_systems)),)
+ifneq ($(filter $(DEB_TARGET_GNU_SYSTEM),$(uclibc_locale_systems)),)
   c_locale := uclibc
 endif
 
