@@ -15,7 +15,7 @@ case "$1" in
         patch $pdir -f --no-backup-if-mismatch -p0 < $0
         cd ${dir}libjava/classpath \
 	  && AUTOM4TE=autom4te2.59 aclocal-1.9 -I m4 -I ../.. -I ../../config \
-	  && autoconf2.59 -I m4
+	  && autoconf -I m4
         ;;
     -unpatch)
         patch $pdir -f --no-backup-if-mismatch -R -p0 < $0

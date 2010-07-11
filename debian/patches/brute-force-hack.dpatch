@@ -13,11 +13,11 @@ elif [ $# -ne 1 ]; then
 fi
 case "$1" in
     -patch)
-        patch $pdir -f --no-backup-if-mismatch -p0 < $0
+        patch $pdir -f --no-backup-if-mismatch -p1 < $0
         #cd ${dir}gcc && autoconf
         ;;
     -unpatch)
-        patch $pdir -f --no-backup-if-mismatch -R -p0 < $0
+        patch $pdir -f --no-backup-if-mismatch -R -p1 < $0
         #rm ${dir}gcc/configure
         ;;
     *)
@@ -26,5 +26,11 @@ case "$1" in
 esac
 exit 0
 
-# append the patch here and adjust the -p? flag in the patch calls.
-
+Index: gcc-4.3.2/libstdc++-v3/include/tr1_impl/cstdio
+===================================================================
+--- gcc-4.3.2.orig/libstdc++-v3/include/tr1_impl/cstdio
++++ gcc-4.3.2/libstdc++-v3/include/tr1_impl/cstdio
+39d38
+< #if _GLIBCXX_USE_C99
+46d44
+< #endif

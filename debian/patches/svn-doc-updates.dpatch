@@ -22,7 +22,7 @@ case "$1" in
     -patch)
         patch $pdir -f --no-backup-if-mismatch -p0 < $0
 	last_updated
-        #cd ${dir}gcc && autoconf2.59
+        #cd ${dir}gcc && autoconf
         ;;
     -unpatch)
         patch $pdir -f --no-backup-if-mismatch -R -p0 < $0

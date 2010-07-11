@@ -2828,8 +2828,8 @@ Index: gcc-4.3.2/libstdc++-v3/configure
  
    # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
      cat > conftest.$ac_ext << EOF
--#line 17019 "configure"
-+#line 17092 "configure"
+-#line 17020 "configure"
++#line 17093 "configure"
  int main()
  {
    // NB: _Atomic_word not necessarily int.

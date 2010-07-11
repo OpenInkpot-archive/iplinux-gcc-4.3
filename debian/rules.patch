@@ -98,6 +98,8 @@ debian_patches += \
 	uclibc-locale-wchar_fix \
 	uclibc-locale-update \
 	locale-facets \
+	libstdc++-namespace \
+	uclibc-locale-update-2 \
 
 #ifneq ($(GFDL_INVARIANT_FREE),yes)
 #  debian_patches += classpath-tooldoc
