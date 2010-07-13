@@ -241,11 +241,11 @@ languages_without_lang_opt := c++ proto
 
 export debian_extra_langs
 
-# Locales
-c_locale := gnu
-uclibc_locale_systems := ip-linux-uclibceabi
-ifneq ($(filter $(DEB_TARGET_GNU_SYSTEM),$(uclibc_locale_systems)),)
-  c_locale := uclibc
+# GNU locales
+force_gnu_locales := no
+locale_no_systems :=
+ifneq (, $(filter $(DEB_TARGET_GNU_SYSTEM),$(locale_no_systems)))
+  force_gnu_locales := disabled for $(DEB_TARGET_GNU_SYSTEM)
 endif
 
 gcc_tarpath		:= $(firstword $(wildcard gcc-*.tar.* /usr/src/gcc-4.3/gcc-*.tar.*))
