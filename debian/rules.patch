@@ -93,13 +93,6 @@ debian_patches += \
 	sparc-force-v9 \
 	sh4_atomic_update \
 	sh4-scheduling \
-	uclibc-locale \
-	uclibc-locale-no__x \
-	uclibc-locale-wchar_fix \
-	uclibc-locale-update \
-	locale-facets \
-	libstdc++-namespace \
-	uclibc-locale-update-2 \
 
 #ifneq ($(GFDL_INVARIANT_FREE),yes)
 #  debian_patches += classpath-tooldoc
