@@ -1,6 +1,6 @@
 # configuration parameters taken from upstream source files
-GCC_VERSION	:= 4.3.2
-NEXT_GCC_VERSION	:= 4.3.3
+GCC_VERSION	:= 4.3.5
+NEXT_GCC_VERSION	:= 4.3.6
 BASE_VERSION	:= 4.3
 SOURCE_VERSION	:= 4.3.2-1.ip3
 DEB_VERSION	:= 4.3.2-1.ip3
