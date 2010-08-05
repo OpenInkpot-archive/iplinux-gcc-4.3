@@ -330,10 +330,6 @@ $(pre_patch_stamp): $(install_autotools_stamp)
 else
 $(pre_patch_stamp):
 endif
-	PATH=$(CURDIR)/bin:/usr/lib/gcc/bin:$$PATH which autoconf
-	PATH=$(CURDIR)/bin:/usr/lib/gcc/bin:$$PATH autoconf --version
-	PATH=$(CURDIR)/bin:/usr/lib/gcc/bin:$$PATH which automake
-	PATH=$(CURDIR)/bin:/usr/lib/gcc/bin:$$PATH automake --version
 	touch $@
 
 unpatch:
