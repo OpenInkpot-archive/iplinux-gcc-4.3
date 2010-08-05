@@ -1,3 +1,10 @@
+gcc-4.3 (4.3.2-1.ip4) zelazny; urgency=low
+
+  [ Alexey Zaitsev ]
+  * Update debian/source/prepare to work with newer mktpkg
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Thu, 05 Aug 2010 17:11:54 +0700
+
 gcc-4.3 (4.3.2-1.ip3) zelazny; urgency=low
 
   * Update build-depends to match reality
