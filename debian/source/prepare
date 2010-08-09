@@ -18,9 +18,9 @@ if [ -z $GNU_TARGET ]; then
 fi
 
 if [ "$TARGET" = "${TARGET#uc}" ]; then
-    LIBC="libuclibc0"
-else
     LIBC="libc6"
+else
+    LIBC="libuclibc0"
 fi
 
 VERSION=4.3
