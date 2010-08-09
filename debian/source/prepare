@@ -17,8 +17,8 @@ if [ -z $GNU_TARGET ]; then
     exit 1
 fi
 
-if [ `echo $TARGET | grep 'uc*'` ]; then
-    LIBC="uclibc0"
+if [ "$TARGET" = "${TARGET#uc}" ]; then
+    LIBC="libuclibc0"
 else
     LIBC="libc6"
 fi
